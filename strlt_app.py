@@ -10,20 +10,24 @@ import speech_recognition as sr
 import numpy as np
 import uuid  # Add the missing uuid import here
 
-# URL endpoint AINA Matxa (scegli Central o Multiaccent)
-AINA_TTS_URL = "https://p1b28cv1e843tih1.eu-west-1.aws.endpoints.huggingface.cloud/api/tts"
 
-def generate_audio_base64_aina(text, voice="elia", language="ca-es"):
-    payload = {"voice": voice, "language": language, "type": "text", "text": text}
+
+# URL del Space di Hugging Face AINA
+HF_SPACE = "https://huggingface.co/spaces/projecte-aina/matxa-alvocat-tts-ca"
+API_URL = HF_SPACE + "/api/predict"
+
+def generate_audio_base64_aina(text):
     try:
-        resp = requests.post(AINA_TTS_URL, json=payload, timeout=30)
+        resp = requests.post(API_URL, json={"data": [text]}, timeout=30)
         resp.raise_for_status()
-        audio_bytes = resp.content  # wav bytes
-        if not audio_bytes:
-            raise ValueError("No audio content returned")
-        return base64.b64encode(audio_bytes).decode(), "aina"
+        j = resp.json()
+        audio_str = j["data"][0]
+        # Se include header base64, rimuovilo
+        if audio_str.startswith("data:audio"):
+            audio_str = audio_str.split(",", 1)[1]
+        return audio_str, "aina_space"
     except Exception as e:
-        st.warning(f"⚠️ AINA TTS failed: {e}")
+        st.warning(f"⚠️ AINA Space TTS error: {e}")
         return None, None
 
 def generate_audio_base64_gtts(text):
@@ -38,16 +42,17 @@ def play_audio(text):
     if not audio_b64:
         audio_b64, source = generate_audio_base64_gtts(text)
         source = "gTTS (fallback)"
-    st.markdown(f"**Voix utilitzada:** {source}")
+    st.markdown(f"**Veu utilitzada:** {source}")
     st.markdown(f"**Text llegit:** {text}")
     audio_html = f"""
     <audio autoplay controls>
-      <source src="data:audio/wav;base64,{audio_b64}" type="audio/wav">
+      <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3">
     </audio>
     """
     components.html(audio_html, height=80)
 
-st.title("🎙️ TTS català amb AINA Matxa + fallback gTTS")
+# UI
+st.title("🎙️ TTS català amb AINA Space + fallback gTTS")
 
 # Page config
 st.set_page_config(page_title="Xat amb Batllori")
