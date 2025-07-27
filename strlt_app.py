@@ -10,38 +10,28 @@ import speech_recognition as sr
 import numpy as np
 import uuid  # Add the missing uuid import here
 
+ELEVEN_API_URL = "https://api.elevenlabs.io/v1/text-to-speech"
+API_KEY = st.secrets["ELEVENLABS_API_KEY"]
+VOICE_ID = "voice_id_for_catalan"  # da ottenere via dashboard
 
-TTSFREE_ENDPOINT = "https://ttsfree.com/api/tts"
-LANGUAGE = "Catalan"
-VOICE = "Catalan Male"
-
-def ttsfree_generate_audio(text):
-    payload = {
-        "text": text,
-        "language": LANGUAGE,
-        "voice": VOICE
+def generate_eleven(audio_text):
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
     }
-
-    try:
-        response = requests.post(TTSFREE_ENDPOINT, json=payload)
-        response.raise_for_status()
-
-        # TTSFree restituisce un URL del file MP3
-        audio_url = response.json().get("audioUrl")
-
-        if audio_url:
-            audio_data = requests.get(audio_url).content
-            b64_audio = base64.b64encode(audio_data).decode()
-            return f"""<audio autoplay controls>
-                          <source src="data:audio/mp3;base64,{b64_audio}" type="audio/mp3">
-                       </audio>"""
-        else:
-            return "❌ Errore: nessun audio restituito"
-    except Exception as e:
-        return f"❌ Errore durante la generazione dell'audio: {e}"
-
+    payload = {
+        "voice_id": VOICE_ID,
+        "model_id": "eleven_multilingual_v2",
+        "text": audio_text,
+        "language": "cat"
+    }
+    r = requests.post(ELEVEN_API_URL, json=payload, headers=headers, timeout=30)
+    r.raise_for_status()
+    audio_b64 = base64.b64encode(r.content).decode()
+    return audio_b64
+    
 # Streamlit UI
-st.title("🎤 Catalan Text-to-Speech")
+st.title("🎤 Catalan Text-to-Speech 11labs")
 
 def generate_audio_base64_gtts(text):
     tts = gTTS(text=text, lang='ca')
@@ -252,8 +242,7 @@ if st.button("Envia", key=send_button_key) and user_input.strip():
     # sentences = split_text_into_sentences(bot_response)
     # play_audio_sequence(sentences)
     # Legge l'intera risposta del bot in una volta sola, con fallback automatico
-    audio_html = ttsfree_generate_audio(bot_response.strip())
-    st.markdown(audio_html, unsafe_allow_html=True)
+    generate_eleven(bot_response)
 
     # Rerun to update the UI and clear the input field
     st.rerun()
