@@ -10,4 +10,4 @@ SpeechRecognition
 numpy
 scipy
 ffmpeg
-openai
+elevenlabs
