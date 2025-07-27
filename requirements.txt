@@ -10,3 +10,4 @@ SpeechRecognition
 numpy
 scipy
 ffmpeg
+openai
