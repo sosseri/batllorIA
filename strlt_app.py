@@ -252,7 +252,7 @@ if st.button("Envia", key=send_button_key) and user_input.strip():
     # sentences = split_text_into_sentences(bot_response)
     # play_audio_sequence(sentences)
     # Legge l'intera risposta del bot in una volta sola, con fallback automatico
-    audio_html = ttsfree_generate_audio(user_text.strip())
+    audio_html = ttsfree_generate_audio(bot_response.strip())
     st.markdown(audio_html, unsafe_allow_html=True)
 
     # Rerun to update the UI and clear the input field
