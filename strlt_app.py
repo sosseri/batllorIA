@@ -12,7 +12,7 @@ import uuid  # Add the missing uuid import here
 
 ELEVEN_API_URL = "https://api.elevenlabs.io/v1/text-to-speech"
 API_KEY = st.secrets["ELEVENLABS_API_KEY"]
-VOICE_ID = "voice_id_for_catalan"  # da ottenere via dashboard
+VOICE_ID = "Z3R5wn05IrDiVCyEkUrK"  # da ottenere via dashboard
 
 def generate_eleven(audio_text):
     headers = {
