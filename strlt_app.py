@@ -12,8 +12,10 @@ import uuid  # Add the missing uuid import here
 
 # add openai voice reading
 from openai import OpenAI
+api_key = st.secrets["OPENAI_API_KEY"]
+st.text(f"🔐 OpenAI key (da secrets) trovata? {'Sì' if api_key else 'NO'}")
 
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+client = OpenAI(api_key=api_key)
 
 def generate_audio_base64_with_fallback(text, voice="nova", client=client):
     # Prova OpenAI prima
