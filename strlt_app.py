@@ -28,7 +28,6 @@ def generate_audio_base64_with_fallback(text, voice="nova"):
             response_format="mp3",
             instructions="Llegeix amb un to natural i alegre."
         )
-        print(response)
         audio_data = response.read()
         st.text(f"✅ Bytes generats per OpenAI: {len(audio_data)}")
 
@@ -39,7 +38,11 @@ def generate_audio_base64_with_fallback(text, voice="nova"):
         return base64.b64encode(audio_data).decode(), "openai"
 
     except Exception as e:
-        st.error(f"❌ Error OpenAI: {e}")
+        import traceback
+        st.error("❌ Error OpenAI:")
+        st.code(f"{repr(e)}")
+        st.code(traceback.format_exc())
+
         st.text("🎤 Fallback a gTTS...")
 
         try:
