@@ -14,20 +14,26 @@ ELEVEN_API_URL = "https://api.elevenlabs.io/v1/text-to-speech"
 API_KEY = st.secrets["ELEVENLABS_API_KEY"]
 VOICE_ID = "Z3R5wn05IrDiVCyEkUrK"  # da ottenere via dashboard
 
-def generate_eleven(audio_text):
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "voice_id": VOICE_ID,
-        "model_id": "eleven_multilingual_v2",
-        "text": audio_text,
-        "language": "cat"
-    }
-    r = requests.post(ELEVEN_API_URL, json=payload, headers=headers, timeout=30)
-    r.raise_for_status()
-    audio_b64 = base64.b64encode(r.content).decode()
+from elevenlabs.client import ElevenLabs
+from elevenlabs import play
+
+
+
+
+def generate_eleven(audio_text, API_KEY):
+
+    client = ElevenLabs(API_KEY)
+
+    audio = client.text_to_speech.convert(
+        text=audio_text,
+        voice_id="JBFqnCBsd6RMkjVDRZzb",
+        model_id="eleven_multilingual_v2",
+        output_format="mp3_44100_128",
+    )
+    
+    play(audio)
+
+    audio_b64 = base64.b64encode(audio.content).decode()
     return audio_b64
     
 # Streamlit UI
