@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+groq
+gtts
+pydub
+requests
+streamlit
+streamlit_webrtc
+SpeechRecognition
+pyaudio
+numpy
+scipy
+ffmpeg
+pydub
+
