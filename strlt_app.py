@@ -13,9 +13,9 @@ import uuid  # Add the missing uuid import here
 # add openai voice reading
 from openai import OpenAI
 
-client = OpenAI()
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-def generate_audio_base64_with_fallback(text, voice="nova"):
+def generate_audio_base64_with_fallback(text, voice="nova", client=client):
     # Prova OpenAI prima
     try:
         response = client.audio.speech.create(
