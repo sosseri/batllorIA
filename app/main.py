@@ -6,6 +6,10 @@ import uuid
 
 app = FastAPI()
 
+@app.get("/")
+def read_root():
+    return {"message": "Hello from Batllori API"}
+    
 # Store conversations in memory (in a production app, use a database)
 conversations: Dict[str, List[Dict]] = {}
 
