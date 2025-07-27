@@ -10,6 +10,51 @@ import speech_recognition as sr
 import numpy as np
 import uuid  # Add the missing uuid import here
 
+# add openai voice reading
+from openai import OpenAI
+
+client = OpenAI()
+
+def generate_audio_base64_with_fallback(text, voice="nova"):
+    # Prova OpenAI prima
+    try:
+        response = client.audio.speech.create(
+            model="gpt-4o-mini-tts",
+            voice=voice,
+            input=text,
+            response_format="mp3",
+            instructions="Llegeix amb un to natural i agradable."
+        )
+        audio_data = response.read()
+        return base64.b64encode(audio_data).decode(), "openai"
+    except Exception as e:
+        print(f"[Fallback] Error OpenAI TTS: {e}. Using gTTS fallback.")
+        # Fallback a gTTS in caso di errore
+        try:
+            tts = gTTS(text=text, lang='ca')
+            audio_fp = BytesIO()
+            tts.write_to_fp(audio_fp)
+            audio_fp.seek(0)
+            return base64.b64encode(audio_fp.read()).decode(), "gtts"
+        except Exception as fallback_err:
+            print(f"[Error] Anche gTTS ha fallito: {fallback_err}")
+            return None, "none"
+
+def play_audio(text):
+    audio_b64, source = generate_audio_base64_with_fallback(text)
+    if audio_b64:
+        st.markdown(f"**Batllori ({'OpenAI' if source == 'openai' else 'gTTS'}):** {text}")
+        audio_html = f"""
+        <audio autoplay controls>
+            <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3">
+        </audio>
+        """
+        components.html(audio_html, height=80)
+    else:
+        st.error("No s'ha pogut generar l'àudio.")
+
+        
+
 # Page config
 st.set_page_config(page_title="Xat amb Batllori")
 
@@ -191,10 +236,12 @@ if st.button("Envia", key=send_button_key) and user_input.strip():
     st.markdown("**Tu:** " + user_msg)
     st.markdown("**Batllori:** " + bot_response)
 
-    # Use the traditional sentence splitting approach with gTTS
-    sentences = split_text_into_sentences(bot_response)
-    play_audio_sequence(sentences)
-    
+    ## Use the traditional sentence splitting approach with gTTS
+    # sentences = split_text_into_sentences(bot_response)
+    # play_audio_sequence(sentences)
+    # Legge l'intera risposta del bot in una volta sola, con fallback automatico
+    play_audio(bot_response)
+
     # Rerun to update the UI and clear the input field
     st.rerun()
 
