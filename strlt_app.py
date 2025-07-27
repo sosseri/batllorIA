@@ -17,22 +17,31 @@ st.text(f"🔐 OpenAI key (da secrets) trovata? {'Sì' if api_key else 'NO'}")
 
 client = OpenAI(api_key=api_key)
 
-def generate_audio_base64_with_fallback(text, voice="nova", client=client):
-    # Prova OpenAI prima
+def generate_audio_base64_with_fallback(text, voice="nova"):
     try:
+        st.text("🔁 Provant OpenAI TTS...")
+
         response = client.audio.speech.create(
             model="gpt-4o-mini-tts",
             voice=voice,
             input=text,
             response_format="mp3",
-            instructions="Llegeix amb un to natural i agradable."
+            instructions="Llegeix amb un to natural i alegre."
         )
+        print(response)
         audio_data = response.read()
-        print(f"✅ Audio OpenAI generat, mida: {len(audio_data)} bytes")
+        st.text(f"✅ Bytes generats per OpenAI: {len(audio_data)}")
+
+        if len(audio_data) == 0:
+            st.warning("⚠️ OpenAI ha tornat 0 bytes.")
+            raise ValueError("Empty audio")
+
         return base64.b64encode(audio_data).decode(), "openai"
+
     except Exception as e:
-        print(f"[Fallback] Error OpenAI TTS: {e}. Using gTTS fallback.")
-        # Fallback a gTTS in caso di errore
+        st.error(f"❌ Error OpenAI: {e}")
+        st.text("🎤 Fallback a gTTS...")
+
         try:
             tts = gTTS(text=text, lang='ca')
             audio_fp = BytesIO()
@@ -40,8 +49,9 @@ def generate_audio_base64_with_fallback(text, voice="nova", client=client):
             audio_fp.seek(0)
             return base64.b64encode(audio_fp.read()).decode(), "gtts"
         except Exception as fallback_err:
-            print(f"[Error] Anche gTTS ha fallito: {fallback_err}")
+            st.error(f"❌ Error també amb gTTS: {fallback_err}")
             return None, "none"
+
 
 def play_audio(text):
     audio_b64, source = generate_audio_base64_with_fallback(text)
