@@ -20,7 +20,7 @@ from elevenlabs import play
 
 
 
-def generate_eleven(audio_text, API_KEY):
+def generate_eleven(audio_text, API_KEY = API_KEY):
 
     client = ElevenLabs(API_KEY)
 
