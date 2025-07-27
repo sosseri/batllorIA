@@ -42,6 +42,7 @@ def generate_audio_base64_with_fallback(text, voice="nova"):
         st.error("❌ Error OpenAI:")
         st.code(f"{repr(e)}")
         st.code(traceback.format_exc())
+        st.exception(e)  # ✅
 
         st.text("🎤 Fallback a gTTS...")
 
