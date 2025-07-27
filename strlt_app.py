@@ -22,7 +22,7 @@ from elevenlabs import play
 
 def generate_eleven(audio_text, API_KEY = API_KEY):
 
-    client = ElevenLabs(API_KEY)
+    client = ElevenLabs(api_key = API_KEY)
 
     audio = client.text_to_speech.convert(
         text=audio_text,
