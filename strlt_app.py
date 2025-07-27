@@ -10,66 +10,46 @@ import speech_recognition as sr
 import numpy as np
 import uuid  # Add the missing uuid import here
 
-# add openai voice reading
-from openai import OpenAI
-api_key = st.secrets["OPENAI_API_KEY"]
-st.text(f"🔐 OpenAI key (da secrets) trovata? {'Sì' if api_key else 'NO'}")
-
-client = OpenAI(api_key=api_key)
-
-def generate_audio_base64_with_fallback(text, voice="nova"):
+def generate_audio_base64_aina(text):
+    API_URL = "https://projecte-aina.hf.space/run/predict"
+    headers = {"Content-Type": "application/json"}
+    payload = {"data": [text]}
     try:
-        st.text("🔁 Provant OpenAI TTS...")
-
-        response = client.audio.speech.create(
-            model="gpt-4o-mini-tts",
-            voice=voice,
-            input=text,
-            response_format="mp3",
-            instructions="Llegeix amb un to natural i alegre."
-        )
-        audio_data = response.read()
-        st.text(f"✅ Bytes generats per OpenAI: {len(audio_data)}")
-
-        if len(audio_data) == 0:
-            st.warning("⚠️ OpenAI ha tornat 0 bytes.")
-            raise ValueError("Empty audio")
-
-        return base64.b64encode(audio_data).decode(), "openai"
-
+        response = requests.post(API_URL, json=payload, timeout=20)
+        response.raise_for_status()
+        json_resp = response.json()
+        # La risposta ha audio base64 in json_resp["data"][0]
+        audio_b64 = json_resp["data"][0].split(",")[1] if json_resp["data"][0].startswith("data:audio") else json_resp["data"][0]
+        return audio_b64
     except Exception as e:
-        import traceback
-        st.error("❌ Error OpenAI:")
-        st.code(f"{repr(e)}")
-        st.code(traceback.format_exc())
-        st.exception(e)  # ✅
+        st.warning(f"⚠️ Fallito AINA TTS: {e}")
+        return None
 
-        st.text("🎤 Fallback a gTTS...")
-
-        try:
-            tts = gTTS(text=text, lang='ca')
-            audio_fp = BytesIO()
-            tts.write_to_fp(audio_fp)
-            audio_fp.seek(0)
-            return base64.b64encode(audio_fp.read()).decode(), "gtts"
-        except Exception as fallback_err:
-            st.error(f"❌ Error també amb gTTS: {fallback_err}")
-            return None, "none"
-
+def generate_audio_base64_gtts(text):
+    tts = gTTS(text=text, lang='ca')
+    audio_fp = BytesIO()
+    tts.write_to_fp(audio_fp)
+    audio_fp.seek(0)
+    return base64.b64encode(audio_fp.read()).decode()
 
 def play_audio(text):
-    audio_b64, source = generate_audio_base64_with_fallback(text)
-    if audio_b64:
-        st.markdown(f"**Batllori ({'OpenAI' if source == 'openai' else 'gTTS'}):** {text}")
-        audio_html = f"""
-        <audio autoplay controls>
-            <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3">
-        </audio>
-        """
-        components.html(audio_html, height=80)
+    audio_b64 = generate_audio_base64_aina(text)
+    if audio_b64 is None:
+        # fallback gTTS
+        audio_b64 = generate_audio_base64_gtts(text)
+        st.markdown("**Veu fallback: gTTS**")
     else:
-        st.error("No s'ha pogut generar l'àudio.")
+        st.markdown("**Veu: AINA**")
+    
+    st.markdown(f"**Text llegit:** {text}")
+    audio_html = f"""
+    <audio autoplay controls>
+        <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3">
+    </audio>
+    """
+    components.html(audio_html, height=80)
 
+st.title("🎙️ TTS català amb AINA i fallback gTTS")
         
 
 # Page config
