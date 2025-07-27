@@ -13,6 +13,8 @@ import uuid  # Add the missing uuid import here
 # Page config
 st.set_page_config(page_title="Xat amb Batllori")
 
+# response = requests.post("https://batllori-chat.onrender.com/chat", json={"message": user_input})
+
 # Utils
 def split_text_into_sentences(text):
     # More sophisticated sentence splitting to avoid over-splitting
@@ -152,14 +154,23 @@ if st.button("Envia", key=send_button_key) and user_input.strip():
     # Add user message to chat history
     st.session_state.messages.append({"role": "Tu", "content": user_msg})
     
-    # API call with conversation ID
+    ## API call with conversation ID
+    #response = requests.post(
+    #    "http://localhost:8000/chat", 
+    #    json={
+    #        "message": user_msg,
+    #        "conversation_id": st.session_state.conversation_id
+    #    }
+    #)
+    
     response = requests.post(
-        "http://localhost:8000/chat", 
+        "https://batllori-chat.onrender.com/chat",
         json={
             "message": user_msg,
             "conversation_id": st.session_state.conversation_id
         }
-    )
+)
+
     
     response_data = response.json()
     bot_response = response_data["response"]
@@ -191,9 +202,9 @@ if st.button("Envia", key=send_button_key) and user_input.strip():
 reset_button_key = f"reset_button_{st.session_state.session_key}"
 if st.button("Reiniciar conversa", key=reset_button_key):
     if st.session_state.conversation_id:
-        # Optional: Call delete endpoint to clean up server-side
-        requests.delete(f"http://localhost:8000/conversations/{st.session_state.conversation_id}")
-    
+        ## Optional: Call delete endpoint to clean up server-side
+        # requests.delete(f"http://localhost:8000/conversations/{st.session_state.conversation_id}")
+        requests.delete(f"https://batllori-chat.onrender.com/conversations/{st.session_state.conversation_id}")
     st.session_state.messages = []
     st.session_state.conversation_id = None
     st.session_state.temp_speech_input = ""
