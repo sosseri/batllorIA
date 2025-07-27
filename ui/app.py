@@ -154,14 +154,23 @@ if st.button("Envia", key=send_button_key) and user_input.strip():
     # Add user message to chat history
     st.session_state.messages.append({"role": "Tu", "content": user_msg})
     
-    # API call with conversation ID
+    ## API call with conversation ID
+    #response = requests.post(
+    #    "http://localhost:8000/chat", 
+    #    json={
+    #        "message": user_msg,
+    #        "conversation_id": st.session_state.conversation_id
+    #    }
+    #)
+    
     response = requests.post(
-        "http://localhost:8000/chat", 
+        "https://batllori-chat.onrender.com/chat",
         json={
             "message": user_msg,
             "conversation_id": st.session_state.conversation_id
         }
-    )
+)
+
     
     response_data = response.json()
     bot_response = response_data["response"]
