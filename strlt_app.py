@@ -10,47 +10,45 @@ import speech_recognition as sr
 import numpy as np
 import uuid  # Add the missing uuid import here
 
-def generate_audio_base64_aina(text):
-    API_URL = "https://projecte-aina.hf.space/run/predict"
-    headers = {"Content-Type": "application/json"}
-    payload = {"data": [text]}
+# Config endpoint Aina Kit public
+AINA_TTS_URL = "https://p1b28cv1e843tih1.eu-west-1.aws.endpoints.huggingface.cloud/api/tts"
+
+def generate_audio_base64_aina(text, voice="elia", language="ca-es"):
+    payload = {"text": text, "voice": voice, "language": language, "type": "text"}
     try:
-        response = requests.post(API_URL, json=payload, timeout=20)
-        response.raise_for_status()
-        json_resp = response.json()
-        # La risposta ha audio base64 in json_resp["data"][0]
-        audio_b64 = json_resp["data"][0].split(",")[1] if json_resp["data"][0].startswith("data:audio") else json_resp["data"][0]
+        resp = requests.post(AINA_TTS_URL, json=payload, timeout=20)
+        resp.raise_for_status()
+        audio_bytes = resp.content  # WAV bytes
+        # convert to mp3? For simplicity embed wav
+        audio_b64 = base64.b64encode(audio_bytes).decode()
         return audio_b64
     except Exception as e:
-        st.warning(f"⚠️ Fallito AINA TTS: {e}")
+        st.warning(f"⚠️ AINA TTS fallito: {e}")
         return None
 
 def generate_audio_base64_gtts(text):
     tts = gTTS(text=text, lang='ca')
-    audio_fp = BytesIO()
-    tts.write_to_fp(audio_fp)
-    audio_fp.seek(0)
-    return base64.b64encode(audio_fp.read()).decode()
+    buf = BytesIO()
+    tts.write_to_fp(buf)
+    buf.seek(0)
+    return base64.b64encode(buf.read()).decode()
 
 def play_audio(text):
     audio_b64 = generate_audio_base64_aina(text)
+    source = "AINA"
     if audio_b64 is None:
-        # fallback gTTS
         audio_b64 = generate_audio_base64_gtts(text)
-        st.markdown("**Veu fallback: gTTS**")
-    else:
-        st.markdown("**Veu: AINA**")
-    
+        source = "gTTS (fallback)"
+    st.markdown(f"**Veu utilitzada:** {source}")
     st.markdown(f"**Text llegit:** {text}")
     audio_html = f"""
     <audio autoplay controls>
-        <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3">
+      <source src="data:audio/wav;base64,{audio_b64}" type="audio/wav">
     </audio>
     """
     components.html(audio_html, height=80)
 
-st.title("🎙️ TTS català amb AINA i fallback gTTS")
-        
+st.title("🎙️ TTS català: AINA Matxa + fallback gTTS")        
 
 # Page config
 st.set_page_config(page_title="Xat amb Batllori")
