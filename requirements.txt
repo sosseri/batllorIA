@@ -7,9 +7,6 @@ requests
 streamlit
 streamlit_webrtc
 SpeechRecognition
-pyaudio
 numpy
 scipy
 ffmpeg
-pydub
-
