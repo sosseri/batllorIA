@@ -13,6 +13,8 @@ import uuid  # Add the missing uuid import here
 # Page config
 st.set_page_config(page_title="Xat amb Batllori")
 
+response = requests.post("https://batllori-chat.onrender.com/chat", json={"message": user_input})
+
 # Utils
 def split_text_into_sentences(text):
     # More sophisticated sentence splitting to avoid over-splitting
