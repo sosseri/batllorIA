@@ -26,6 +26,7 @@ def generate_audio_base64_with_fallback(text, voice="nova", client=client):
             instructions="Llegeix amb un to natural i agradable."
         )
         audio_data = response.read()
+        print(f"✅ Audio OpenAI generat, mida: {len(audio_data)} bytes")
         return base64.b64encode(audio_data).decode(), "openai"
     except Exception as e:
         print(f"[Fallback] Error OpenAI TTS: {e}. Using gTTS fallback.")
