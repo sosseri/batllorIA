@@ -30,7 +30,7 @@ def play_audio_gtts(text):
 
 # UI
 st.title("Xat amb Batllor-IA")
-st.header("L'Intelligencia Artificial de la familia Barllori")
+st.subheader("L'Intelligencia Artificial de la familia Batllori")
 
 # Page config
 st.set_page_config(page_title="Xat amb Batllori")
