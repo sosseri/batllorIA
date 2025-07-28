@@ -74,13 +74,16 @@ def play_audio_sequence(sentences):
             pause_duration = len(sentence.split()) * (0.5/(np.mean([len(x) for x in sentence.split()]))*5)
             time.sleep(pause_duration)
     else:
-        audio_b64 = generate_audio_base64(sentences)
+        sentence = sentences
+        audio_b64 = generate_audio_base64(sentence)
         audio_html = f"""
             <audio autoplay>
                 <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3">
             </audio>
             """
         components.html(audio_html, height=0)
+        pause_duration = len(sentence.split()) * 0.5
+        time.sleep(pause_duration)
         
     # Clear the input field after audio finishes playing
     st.session_state.temp_speech_input = ""
