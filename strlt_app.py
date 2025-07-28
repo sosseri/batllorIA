@@ -29,7 +29,7 @@ def play_audio_gtts(text):
     components.html(audio_html, height=80)
 
 # UI
-st.title("Xat amb Batllor-IA")
+st.title("✏️ Xat amb Batllor-IA")
 st.subheader("L'Intelligencia Artificial de la familia Batllori")
 
 # Page config
@@ -214,9 +214,9 @@ if st.button("Envia", key=send_button_key) and user_input.strip():
     st.markdown("**Batllori:** " + bot_response)
 
     ## Use the traditional sentence splitting approach with gTTS
-    # sentences = split_text_into_sentences(bot_response)
-    # play_audio_sequence(sentences)
-    play_audio_gtts(bot_response)
+    sentences = split_text_into_sentences(bot_response)
+    play_audio_sequence(sentences)
+    # play_audio_gtts(bot_response)
 
     # Rerun to update the UI and clear the input field
     st.rerun()
