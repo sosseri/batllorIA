@@ -10,35 +10,6 @@ import speech_recognition as sr
 import numpy as np
 import uuid  # Add the missing uuid import here
 
-ELEVEN_API_URL = "https://api.elevenlabs.io/v1/text-to-speech"
-API_KEY = st.secrets["ELEVENLABS_API_KEY"]
-VOICE_ID = "Z3R5wn05IrDiVCyEkUrK"  # da ottenere via dashboard
-
-from elevenlabs.client import ElevenLabs
-from elevenlabs import play
-
-
-
-
-def generate_eleven(audio_text, API_KEY = API_KEY):
-
-    client = ElevenLabs(api_key = API_KEY)
-
-    audio = client.text_to_speech.convert(
-        text=audio_text,
-        voice_id="JBFqnCBsd6RMkjVDRZzb",
-        model_id="eleven_multilingual_v2",
-        output_format="mp3_44100_128",
-    )
-    
-    play(audio)
-
-    audio_b64 = base64.b64encode(audio.content).decode()
-    return audio_b64
-    
-# Streamlit UI
-st.title("🎤 Catalan Text-to-Speech 11labs")
-
 def generate_audio_base64_gtts(text):
     tts = gTTS(text=text, lang='ca')
     buf = BytesIO()
@@ -46,11 +17,8 @@ def generate_audio_base64_gtts(text):
     buf.seek(0)
     return base64.b64encode(buf.read()).decode(), "gtts"
 
-def play_audio(text):
-    audio_b64, source = generate_audio_base64_aina(text)
-    if not audio_b64:
-        audio_b64, source = generate_audio_base64_gtts(text)
-        source = "gTTS (fallback)"
+def play_audio_gtts(text):
+    audio_b64, source = generate_audio_base64_gtts(text)
     st.markdown(f"**Veu utilitzada:** {source}")
     st.markdown(f"**Text llegit:** {text}")
     audio_html = f"""
@@ -61,7 +29,8 @@ def play_audio(text):
     components.html(audio_html, height=80)
 
 # UI
-st.title("🎙️ TTS català amb AINA Space + fallback gTTS")
+st.title("Xat amb Batllor-IA")
+st.subtitle("L'Intelligencia Artificial de la familia Barllori")
 
 # Page config
 st.set_page_config(page_title="Xat amb Batllori")
@@ -247,8 +216,7 @@ if st.button("Envia", key=send_button_key) and user_input.strip():
     ## Use the traditional sentence splitting approach with gTTS
     # sentences = split_text_into_sentences(bot_response)
     # play_audio_sequence(sentences)
-    # Legge l'intera risposta del bot in una volta sola, con fallback automatico
-    generate_eleven(bot_response)
+    play_audio_gtts(bot_response)
 
     # Rerun to update the UI and clear the input field
     st.rerun()
