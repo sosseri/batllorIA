@@ -240,9 +240,10 @@ with col2:
     webrtc_ctx = webrtc_streamer(
         key="mic",
         audio_receiver_size=1024,
-        client_settings={"audio": True, "video": False},
         audio_processor_factory=AudioProcessor,
+        media_stream_constraints={"audio": True, "video": False},
     )
+
     
     if webrtc_ctx.state.playing:
         st.info("🎤 Escoltant... parla ara (s’aturarà després de 5s de silenci)", icon="🎧")
