@@ -9,6 +9,11 @@ import time
 import speech_recognition as sr
 import numpy as np
 import uuid  # Add the missing uuid import here
+from streamlit_webrtc import webrtc_streamer, AudioProcessorBase
+import av
+import queue
+import threading
+
 
 def generate_audio_base64_gtts(text):
     tts = gTTS(text=text, lang='ca')
@@ -29,9 +34,9 @@ def play_audio_gtts(text):
     components.html(audio_html, height=80)
 
 # UI
-#st.title("✏️ Xat amb Batllor-IA")
+st.set_page_config(page_title="✏️Xat amb Batllori")
 
-st.header("💬 Xat amb BatllorIA")
+#st.header("💬 Xat amb BatllorIA")
 st.subheader("L'Intelligencia Artificial de la familia Batllori")
 
 # Page config
@@ -151,20 +156,20 @@ def recognize_long_speech(max_chunks=5):
 
     return full_text.strip()
 
-# Trascrivi audio (usando Google STT in catalano)
-def recognize_from_file(audio_bytes):
+# Trascrivi l'audio in catalano
+def recognize_speech_from_bytes(audio_bytes):
     recognizer = sr.Recognizer()
     with sr.AudioFile(audio_bytes) as source:
         audio = recognizer.record(source)
     try:
         return recognizer.recognize_google(audio, language="ca-ES")
     except sr.UnknownValueError:
-        return ""
+        st.warning("No s’ha entès el que has dit.")
     except sr.RequestError as e:
         st.error(f"Error Google API: {e}")
-        return ""
+    return ""
 
-# Parla: genera audio da testo con gTTS e autoplay
+# Leggi la risposta con gTTS
 def speak_text(text):
     tts = gTTS(text=text, lang='ca')
     audio_fp = BytesIO()
@@ -177,6 +182,25 @@ def speak_text(text):
     </audio>
     """
     st.components.v1.html(audio_html, height=0)
+
+# Estrai frasi per lettura
+def split_sentences(text):
+    return re.split(r'(?<=[.!?])\s+', text.strip())
+
+# Coda per l’audio in arrivo
+audio_queue = queue.Queue()
+
+class AudioProcessor(AudioProcessorBase):
+    def __init__(self) -> None:
+        self.buffer = BytesIO()
+        self.recording = True
+        self.sample_rate = 16000
+
+    def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
+        pcm = frame.to_ndarray().flatten().astype(np.int16).tobytes()
+        audio_queue.put(pcm)
+        return frame
+
 
 # Init states
 if "messages" not in st.session_state:
@@ -212,13 +236,50 @@ with col1:
 #            st.session_state.temp_speech_input = speech_result
 #            st.rerun()
 with col2:
-    audio_bytes = st.file_uploader("🎤", type=["wav"], label_visibility="collapsed")
+    # Avvia la registrazione
+    webrtc_ctx = webrtc_streamer(
+        key="mic",
+        audio_receiver_size=1024,
+        client_settings={"audio": True, "video": False},
+        audio_processor_factory=AudioProcessor,
+    )
     
-    # Se hai caricato audio, trascrivilo
-    if audio_bytes is not None:
-        st.session_state.user_text = recognize_from_file(audio_bytes)
-        st.experimental_rerun()
-
+    if webrtc_ctx.state.playing:
+        st.info("🎤 Escoltant... parla ara (s’aturarà després de 5s de silenci)", icon="🎧")
+    
+        def record_and_transcribe():
+            audio_data = b""
+            silence_threshold = 200  # byte length
+            silence_count = 0
+    
+            while silence_count < 10:
+                try:
+                    chunk = audio_queue.get(timeout=1)
+                    if len(chunk.strip(b"\x00")) < silence_threshold:
+                        silence_count += 1
+                    else:
+                        silence_count = 0
+                        audio_data += chunk
+                except queue.Empty:
+                    break
+    
+            if audio_data:
+                wav_bytes = BytesIO()
+                import wave
+                wf = wave.open(wav_bytes, 'wb')
+                wf.setnchannels(1)
+                wf.setsampwidth(2)
+                wf.setframerate(16000)
+                wf.writeframes(audio_data)
+                wf.close()
+                wav_bytes.seek(0)
+    
+                text = recognize_speech_from_bytes(wav_bytes)
+                if text:
+                    st.session_state.user_input = text
+                    st.experimental_rerun()
+    
+        threading.Thread(target=record_and_transcribe, daemon=True).start()
 
 # Invio - also use a unique key here
 send_button_key = f"send_button_{st.session_state.session_key}"
