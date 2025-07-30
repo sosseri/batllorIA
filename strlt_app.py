@@ -289,8 +289,6 @@ if st.session_state.recording:
     def stop_after_delay():
         time.sleep(6)
         st.session_state.recording = False
-        if webrtc_ctx:
-            webrtc_ctx.stop()
         speech_text = record_audio_from_stream()
         if speech_text:
             st.session_state.temp_speech_input = speech_text
