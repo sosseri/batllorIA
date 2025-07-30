@@ -13,6 +13,7 @@ from streamlit_webrtc import webrtc_streamer, AudioProcessorBase
 import av
 import queue
 import threading
+import wave
 
 
 def generate_audio_base64_gtts(text):
@@ -36,11 +37,8 @@ def play_audio_gtts(text):
 # UI
 st.set_page_config(page_title="✏️Xat amb Batllori")
 
-#st.header("💬 Xat amb BatllorIA")
+st.header("💬 Xat amb BatllorIA")
 st.subheader("L'Intelligencia Artificial de la familia Batllori")
-
-# Page config
-st.set_page_config(page_title="Xat amb Batllori")
 
 # response = requests.post("https://batllori-chat.onrender.com/chat", json={"message": user_input})
 
@@ -156,50 +154,82 @@ def recognize_long_speech(max_chunks=5):
 
     return full_text.strip()
 
-# Trascrivi l'audio in catalano
-def recognize_speech_from_bytes(audio_bytes):
+
+class AudioProcessor(AudioProcessorBase):
+    def __init__(self) -> None:
+        self.sample_rate = 16000
+
+    def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
+        pcm_data = frame.to_ndarray().flatten().astype(np.int16).tobytes()
+        audio_buffer.put(pcm_data)
+        return frame
+
+# Parla: usa gTTS e autoplay
+def speak_text(text):
+    tts = gTTS(text=text, lang="ca")
+    mp3_fp = BytesIO()
+    tts.write_to_fp(mp3_fp)
+    mp3_fp.seek(0)
+    b64_audio = base64.b64encode(mp3_fp.read()).decode()
+    st.components.v1.html(
+        f"""
+        <audio autoplay>
+            <source src="data:audio/mp3;base64,{b64_audio}" type="audio/mp3">
+        </audio>
+        """,
+        height=0,
+    )
+
+# Riconoscimento vocale
+def recognize_google_from_bytes(wav_bytes):
     recognizer = sr.Recognizer()
-    with sr.AudioFile(audio_bytes) as source:
+    with sr.AudioFile(wav_bytes) as source:
         audio = recognizer.record(source)
     try:
         return recognizer.recognize_google(audio, language="ca-ES")
     except sr.UnknownValueError:
-        st.warning("No s’ha entès el que has dit.")
-    except sr.RequestError as e:
-        st.error(f"Error Google API: {e}")
+        st.warning("No t'he entès.")
+    except sr.RequestError:
+        st.error("Error de connexió amb Google.")
     return ""
 
-# Leggi la risposta con gTTS
-def speak_text(text):
-    tts = gTTS(text=text, lang='ca')
-    audio_fp = BytesIO()
-    tts.write_to_fp(audio_fp)
-    audio_fp.seek(0)
-    b64 = base64.b64encode(audio_fp.read()).decode()
-    audio_html = f"""
-    <audio autoplay>
-        <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-    </audio>
-    """
-    st.components.v1.html(audio_html, height=0)
+# Registra audio (5 sec o silenzio)
+def record_audio_from_stream():
+    raw_audio = b""
+    silence_count = 0
+    silence_threshold = 200
+
+    for _ in range(100):  # ~10s
+        try:
+            chunk = audio_buffer.get(timeout=0.5)
+        except queue.Empty:
+            break
+        if len(chunk.strip(b"\x00")) < silence_threshold:
+            silence_count += 1
+            if silence_count > 8:
+                break
+        else:
+            silence_count = 0
+            raw_audio += chunk
+
+    if not raw_audio:
+        return ""
+
+    wav_fp = BytesIO()
+    with wave.open(wav_fp, 'wb') as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(16000)
+        wf.writeframes(raw_audio)
+    wav_fp.seek(0)
+    return recognize_google_from_bytes(wav_fp)
 
 # Estrai frasi per lettura
-def split_sentences(text):
-    return re.split(r'(?<=[.!?])\s+', text.strip())
+#def split_sentences(text):
+#    return re.split(r'(?<=[.!?])\s+', text.strip())
 
-# Coda per l’audio in arrivo
-audio_queue = queue.Queue()
 
-class AudioProcessor(AudioProcessorBase):
-    def __init__(self) -> None:
-        self.buffer = BytesIO()
-        self.recording = True
-        self.sample_rate = 16000
 
-    def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
-        pcm = frame.to_ndarray().flatten().astype(np.int16).tobytes()
-        audio_queue.put(pcm)
-        return frame
 
 
 # Init states
@@ -213,6 +243,12 @@ if "session_key" not in st.session_state:
     # Generate a unique session key to avoid duplicate element keys
     import uuid
     st.session_state.session_key = str(uuid.uuid4())[:8]
+if "user_input" not in st.session_state:
+    st.session_state.user_input = ""
+
+# Audio buffer queue
+audio_buffer = queue.Queue()
+
 
 # Display chat history
 for message in st.session_state.messages:
@@ -226,61 +262,27 @@ with col1:
     # Use a dynamic key with session_key to avoid duplicates
     input_key = f"input_text_{st.session_state.session_key}"
     user_input = st.text_input("Tu:", key=input_key, value=current_input)
-#with col2:
-#    # Also use unique key for the button
-#    mic_button_key = f"mic_button_{st.session_state.session_key}"
-#    if st.button("🎤", key=mic_button_key, help="Prem per parlar"):
-#        speech_result = recognize_speech()
-#        if speech_result:
-#            # Store in temporary variable instead of directly in input_text
-#            st.session_state.temp_speech_input = speech_result
-#            st.rerun()
 with col2:
-    # Avvia la registrazione
-    webrtc_ctx = webrtc_streamer(
-        key="mic",
-        audio_receiver_size=1024,
-        audio_processor_factory=AudioProcessor,
-        media_stream_constraints={"audio": True, "video": False},
-    )
+    mic_btn = st.button("🎤", help="Prem per parlar")
+    if mic_btn:
+        st.session_state.temp_speech_input = ""
+        with st.spinner("Escoltant..."):
+            webrtc_ctx = webrtc_streamer(
+                key="mic",
+                audio_receiver_size=256,
+                audio_processor_factory=AudioProcessor,
+                media_stream_constraints={"audio": True, "video": False},
+            )
 
-    
-    if webrtc_ctx.state.playing:
-        st.info("🎤 Escoltant... parla ara (s’aturarà després de 5s de silenci)", icon="🎧")
-    
-        def record_and_transcribe():
-            audio_data = b""
-            silence_threshold = 200  # byte length
-            silence_count = 0
-    
-            while silence_count < 10:
-                try:
-                    chunk = audio_queue.get(timeout=1)
-                    if len(chunk.strip(b"\x00")) < silence_threshold:
-                        silence_count += 1
-                    else:
-                        silence_count = 0
-                        audio_data += chunk
-                except queue.Empty:
-                    break
-    
-            if audio_data:
-                wav_bytes = BytesIO()
-                import wave
-                wf = wave.open(wav_bytes, 'wb')
-                wf.setnchannels(1)
-                wf.setsampwidth(2)
-                wf.setframerate(16000)
-                wf.writeframes(audio_data)
-                wf.close()
-                wav_bytes.seek(0)
-    
-                text = recognize_speech_from_bytes(wav_bytes)
-                if text:
-                    st.session_state.user_input = text
-                    st.experimental_rerun()
-    
-        threading.Thread(target=record_and_transcribe, daemon=True).start()
+            if webrtc_ctx.state.playing:
+                threading.Thread(target=lambda: time.sleep(6) or webrtc_ctx.stop(), daemon=True).start()
+                while webrtc_ctx.state.playing:
+                    time.sleep(0.1)
+
+                speech_text = record_audio_from_stream()
+                if speech_text:
+                    st.session_state.temp_speech_input = speech_text
+                    st.rerun()
 
 # Invio - also use a unique key here
 send_button_key = f"send_button_{st.session_state.session_key}"
