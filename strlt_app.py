@@ -29,7 +29,9 @@ def play_audio_gtts(text):
     components.html(audio_html, height=80)
 
 # UI
-st.title("✏️ Xat amb Batllor-IA")
+#st.title("✏️ Xat amb Batllor-IA")
+
+st.header("💬 Xat amb BatllorIA")
 st.subheader("L'Intelligencia Artificial de la familia Batllori")
 
 # Page config
@@ -88,6 +90,7 @@ def play_audio_sequence(sentences):
     # Clear the input field after audio finishes playing
     st.session_state.temp_speech_input = ""
 
+# local function
 def recognize_speech():
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
@@ -104,6 +107,7 @@ def recognize_speech():
         st.error("❌ Error en la connexió amb el servei de reconeixement.")
     return ""
 
+# local function
 def recognize_long_speech(max_chunks=5):
     recognizer = sr.Recognizer()
     full_text = ""
@@ -147,6 +151,33 @@ def recognize_long_speech(max_chunks=5):
 
     return full_text.strip()
 
+# Trascrivi audio (usando Google STT in catalano)
+def recognize_from_file(audio_bytes):
+    recognizer = sr.Recognizer()
+    with sr.AudioFile(audio_bytes) as source:
+        audio = recognizer.record(source)
+    try:
+        return recognizer.recognize_google(audio, language="ca-ES")
+    except sr.UnknownValueError:
+        return ""
+    except sr.RequestError as e:
+        st.error(f"Error Google API: {e}")
+        return ""
+
+# Parla: genera audio da testo con gTTS e autoplay
+def speak_text(text):
+    tts = gTTS(text=text, lang='ca')
+    audio_fp = BytesIO()
+    tts.write_to_fp(audio_fp)
+    audio_fp.seek(0)
+    b64 = base64.b64encode(audio_fp.read()).decode()
+    audio_html = f"""
+    <audio autoplay>
+        <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+    </audio>
+    """
+    st.components.v1.html(audio_html, height=0)
+
 # Init states
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -171,15 +202,23 @@ with col1:
     # Use a dynamic key with session_key to avoid duplicates
     input_key = f"input_text_{st.session_state.session_key}"
     user_input = st.text_input("Tu:", key=input_key, value=current_input)
+#with col2:
+#    # Also use unique key for the button
+#    mic_button_key = f"mic_button_{st.session_state.session_key}"
+#    if st.button("🎤", key=mic_button_key, help="Prem per parlar"):
+#        speech_result = recognize_speech()
+#        if speech_result:
+#            # Store in temporary variable instead of directly in input_text
+#            st.session_state.temp_speech_input = speech_result
+#            st.rerun()
 with col2:
-    # Also use unique key for the button
-    mic_button_key = f"mic_button_{st.session_state.session_key}"
-    if st.button("🎤", key=mic_button_key, help="Prem per parlar"):
-        speech_result = recognize_speech()
-        if speech_result:
-            # Store in temporary variable instead of directly in input_text
-            st.session_state.temp_speech_input = speech_result
-            st.rerun()
+    audio_bytes = st.file_uploader("🎤", type=["wav"], label_visibility="collapsed")
+    
+    # Se hai caricato audio, trascrivilo
+    if audio_bytes is not None:
+        st.session_state.user_text = recognize_from_file(audio_bytes)
+        st.experimental_rerun()
+
 
 # Invio - also use a unique key here
 send_button_key = f"send_button_{st.session_state.session_key}"
