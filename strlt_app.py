@@ -154,15 +154,21 @@ def recognize_long_speech(max_chunks=5):
 
     return full_text.strip()
 
+# Audio buffer queue
+audio_buffer = queue.Queue()
 
 class AudioProcessor(AudioProcessorBase):
     def __init__(self) -> None:
         self.sample_rate = 16000
 
     def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
-        pcm_data = frame.to_ndarray().flatten().astype(np.int16).tobytes()
-        audio_buffer.put(pcm_data)
+        try:
+            pcm_data = frame.to_ndarray().flatten().astype(np.int16).tobytes()
+            audio_buffer.put(pcm_data)
+        except Exception as e:
+            print("Errore nel recv:", e)
         return frame
+
 
 # Parla: usa gTTS e autoplay
 def speak_text(text):
@@ -193,18 +199,18 @@ def recognize_google_from_bytes(wav_bytes):
         st.error("Error de connexió amb Google.")
     return ""
 
-# Registra audio (5 sec o silenzio)
 def record_audio_from_stream():
     raw_audio = b""
     silence_count = 0
-    silence_threshold = 200
+    silence_threshold = 500  # più permissivo
 
-    for _ in range(100):  # ~10s
+    max_chunks = 100  # circa 10s
+    for _ in range(max_chunks):
         try:
             chunk = audio_buffer.get(timeout=0.5)
         except queue.Empty:
             break
-        if len(chunk.strip(b"\x00")) < silence_threshold:
+        if np.frombuffer(chunk, dtype=np.int16).max() < silence_threshold:
             silence_count += 1
             if silence_count > 8:
                 break
@@ -223,6 +229,7 @@ def record_audio_from_stream():
         wf.writeframes(raw_audio)
     wav_fp.seek(0)
     return recognize_google_from_bytes(wav_fp)
+
 
 # Estrai frasi per lettura
 #def split_sentences(text):
@@ -249,8 +256,7 @@ if "recording" not in st.session_state:
     st.session_state.recording = False
 
 
-# Audio buffer queue
-audio_buffer = queue.Queue()
+
 
 
 # Display chat history
