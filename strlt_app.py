@@ -245,6 +245,9 @@ if "session_key" not in st.session_state:
     st.session_state.session_key = str(uuid.uuid4())[:8]
 if "user_input" not in st.session_state:
     st.session_state.user_input = ""
+if "recording" not in st.session_state:
+    st.session_state.recording = False
+
 
 # Audio buffer queue
 audio_buffer = queue.Queue()
@@ -263,26 +266,33 @@ with col1:
     input_key = f"input_text_{st.session_state.session_key}"
     user_input = st.text_input("Tu:", key=input_key, value=current_input)
 with col2:
-    mic_btn = st.button("🎤", help="Prem per parlar")
-    if mic_btn:
+    if st.button("🎤", help="Prem per parlar"):
+        st.session_state.recording = True
         st.session_state.temp_speech_input = ""
-        with st.spinner("Escoltant..."):
-            webrtc_ctx = webrtc_streamer(
-                key="mic",
-                audio_receiver_size=256,
-                audio_processor_factory=AudioProcessor,
-                media_stream_constraints={"audio": True, "video": False},
-            )
+        st.rerun()
 
-            if webrtc_ctx.state.playing:
-                threading.Thread(target=lambda: time.sleep(6) or webrtc_ctx.stop(), daemon=True).start()
-                while webrtc_ctx.state.playing:
-                    time.sleep(0.1)
+if st.session_state.recording:
+    st.info("🎤 Escoltant... parla ara!", icon="🎧")
+    webrtc_ctx = webrtc_streamer(
+        key="mic",
+        audio_receiver_size=256,
+        audio_processor_factory=AudioProcessor,
+        media_stream_constraints={"audio": True, "video": False},
+    )
 
-                speech_text = record_audio_from_stream()
-                if speech_text:
-                    st.session_state.temp_speech_input = speech_text
-                    st.rerun()
+    def stop_after_delay():
+        time.sleep(6)
+        st.session_state.recording = False
+        if webrtc_ctx:
+            webrtc_ctx.stop()
+        speech_text = record_audio_from_stream()
+        if speech_text:
+            st.session_state.temp_speech_input = speech_text
+        st.experimental_rerun()
+
+    threading.Thread(target=stop_after_delay, daemon=True).start()
+
+
 
 # Invio - also use a unique key here
 send_button_key = f"send_button_{st.session_state.session_key}"
