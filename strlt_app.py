@@ -186,6 +186,9 @@ spoken_text = get_spoken_text()
 if spoken_text and st.session_state.get("input_text", "") != spoken_text:
     st.session_state.input_text = spoken_text
     st.rerun()
+    if "input_text" in st.session_state:
+        del st.session_state.input_text
+
 
 
 # Invio - also use a unique key here
@@ -231,6 +234,9 @@ if st.button("Envia", key=send_button_key) and user_input.strip():
 
     # Rerun to update the UI and clear the input field
     st.rerun()
+    if "input_text" in st.session_state:
+        del st.session_state.input_text
+
 
 # Add a reset button to clear the conversation - with unique key
 reset_button_key = f"reset_button_{st.session_state.session_key}"
