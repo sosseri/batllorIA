@@ -172,37 +172,37 @@ if "input_text" not in st.session_state:
 
 col1, col2 = st.columns([10, 1])
 
-# Colonna principale: campo di input testuale
-with col1:
-    if "input_text" not in st.session_state:
-        st.session_state.input_text = ""
+# Inizializza input_text se non esiste
+if "input_text" not in st.session_state:
+    st.session_state.input_text = ""
 
-    user_input = st.text_input("Tu:", key="input_text", label_visibility="collapsed")
+# Input visibile
+user_input = st.text_input("Tu:", key="input_text")
 
-# Colonna secondaria: bottone microfono con JS
-with col2:
-    components.html("""
-    <button id="mic" style="background:none; border:none; font-size:1.5em; cursor:pointer;" title="Prem per parlar">🎤</button>
-    <script>
-      const mic = document.getElementById("mic");
-      mic.onclick = () => {
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = 'ca-ES';
-        recognition.interimResults = false;
-        recognition.start();
-        recognition.onresult = (event) => {
-          const transcript = event.results[0][0].transcript;
-          const inputBox = window.parent.document.querySelector('input[data-testid="stTextInput"]');
-          if (inputBox) {
-            inputBox.value = transcript;
-            const inputEvent = new Event("input", { bubbles: true });
-            inputBox.dispatchEvent(inputEvent);
-          }
-        };
-      };
-    </script>
-    """, height=40)
-
+# Bottone microfono HTML (sotto alla barra, visibile)
+components.html("""
+<div style="text-align: left; margin-top: -10px; margin-bottom: 10px;">
+  <button id="mic" style="font-size: 1.5em; background: none; border: none; cursor: pointer;" title="Prem per parlar">🎤 Parla</button>
+</div>
+<script>
+  const mic = document.getElementById("mic");
+  mic.onclick = () => {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'ca-ES';
+    recognition.interimResults = false;
+    recognition.start();
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      const inputBox = window.parent.document.querySelector('input[data-testid="stTextInput"]');
+      if (inputBox) {
+        inputBox.value = transcript;
+        const inputEvent = new Event("input", { bubbles: true });
+        inputBox.dispatchEvent(inputEvent);
+      }
+    };
+  };
+</script>
+""", height=60)
 
 
 
