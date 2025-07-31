@@ -272,27 +272,23 @@ with col1:
     input_key = f"input_text_{st.session_state.session_key}"
     user_input = st.text_input("Tu:", key=input_key, value=current_input)
 with col2:
-    if st.button("🎤", help="Prem per parlar"):
+    if st.button("🎤"):
         st.session_state.recording = True
         st.session_state.temp_speech_input = ""
-        st.rerun()
+        st.stop()  # ferma il resto del codice e attendi ripetizione
 
 if st.session_state.recording:
-    st.info("🎤 Escoltant... parla ara!", icon="🎧")
-    webrtc_ctx = webrtc_streamer(
-        key="mic",
-        audio_receiver_size=256,
-        audio_processor_factory=AudioProcessor,
-        media_stream_constraints={"audio": True, "video": False},
-    )
+    webrtc_ctx = webrtc_streamer(...)
+    threading.Thread(target=stop_after_delay, daemon=True).start()
+    st.stop()  # ferma qui finché la registrazione non cambia lo stato
+    
 
     def stop_after_delay():
         time.sleep(6)
-        st.session_state.recording = False
         speech_text = record_audio_from_stream()
         if speech_text:
             st.session_state.temp_speech_input = speech_text
-        st.experimental_rerun()
+
 
     threading.Thread(target=stop_after_delay, daemon=True).start()
 
