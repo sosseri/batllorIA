@@ -9,6 +9,12 @@ import time
 import speech_recognition as sr
 import numpy as np
 import uuid  # Add the missing uuid import here
+from streamlit.components.v1 import declare_component
+
+speech_input = declare_component("speech_input", path="")
+
+def get_spoken_text():
+    return speech_input(default="")
 
 def generate_audio_base64_gtts(text):
     tts = gTTS(text=text, lang='ca')
@@ -173,33 +179,13 @@ if "input_text" not in st.session_state:
 # Campo input reale
 user_input = st.text_input("Tu:", key="input_text")
 
-# Bottone microfono + trascrizione da browser
-components.html("""
-  <div style="margin-top:10px;">
-    <button id="mic" style="font-size:1.2em; background:none; border:none; cursor:pointer;">🎤 Parla</button>
-  </div>
-  <script>
-    const mic = document.getElementById("mic");
-    mic.onclick = () => {
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = 'ca-ES';
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
 
-      recognition.start();
+spoken_text = get_spoken_text()
 
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        const inputs = window.parent.document.querySelectorAll('input[data-testid="stTextInput"]');
-        if (inputs.length > 0) {
-          inputs[0].value = transcript;
-          const inputEvent = new Event("input", { bubbles: true });
-          inputs[0].dispatchEvent(inputEvent);
-        }
-      };
-    };
-  </script>
-""", height=60)
+# Aggiorna la barra di input se c'è nuovo testo trascritto
+if spoken_text and st.session_state.get("input_text", "") != spoken_text:
+    st.session_state.input_text = spoken_text
+    st.rerun()
 
 
 # Invio - also use a unique key here
