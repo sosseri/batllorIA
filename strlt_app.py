@@ -166,44 +166,53 @@ if "session_key" not in st.session_state:
 for message in st.session_state.messages:
     st.markdown(f"**{message['role']}:** {message['content']}")
 
-# Layout
-col1, col2 = st.columns([10, 1])
-with col1:
-    # Get current speech input if available
-    current_input = st.session_state.temp_speech_input if "temp_speech_input" in st.session_state else ""
-    # Use a dynamic key with session_key to avoid duplicates
-    input_key = f"input_text_{st.session_state.session_key}"
-    user_input = st.text_input("Tu:", key=input_key, value=current_input)
+# Singola barra + microfono integrato via HTML
+st.markdown("""
+<style>
+.input-container {
+  display: flex;
+  align-items: center;
+}
+.input-container input {
+  flex: 1;
+  padding: 0.5em;
+  font-size: 1em;
+}
+.input-container button {
+  margin-left: 0.5em;
+  font-size: 1.2em;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+</style>
+<div class="input-container">
+  <input id="user_input_box" placeholder="Parla o escriu..." />
+  <button id="mic_btn">🎤</button>
+</div>
+<script>
+const inputBox = window.parent.document.getElementById("user_input_box");
+const micBtn = window.parent.document.getElementById("mic_btn");
 
-with col2:
-    # HTML/JS: microfono browser (speech-to-text)
-    components.html("""
-    <div style="position:relative; top:-70px; left:92%;">
-      <button id="mic" style="background:none; border:none; font-size:1.5em;">🎤</button>
-    </div>
-    <script>
-    const mic = document.getElementById("mic");
-    mic.onclick = () => {
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = 'ca-ES';
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-      recognition.start();
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        window.parent.postMessage({text: transcript}, "*");
-      };
-    };
-    window.addEventListener("message", (event) => {
-      const inputBoxes = window.parent.document.querySelectorAll("input");
-      if (event.data.text && inputBoxes.length > 0) {
-        inputBoxes[0].value = event.data.text;
-        const inputEvent = new Event("input", { bubbles: true });
-        inputBoxes[0].dispatchEvent(inputEvent);
-      }
-    });
-    </script>
-    """, height=0)
+micBtn.onclick = () => {
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = 'ca-ES';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  recognition.start();
+  recognition.onresult = (event) => {
+    const text = event.results[0][0].transcript;
+    inputBox.value = text;
+    const inputEvent = new Event("input", { bubbles: true });
+    inputBox.dispatchEvent(inputEvent);
+  };
+};
+</script>
+""", unsafe_allow_html=True)
+
+# Nascondi il vero text_input (che serve per backend)
+input_key = f"input_text_{st.session_state.session_key}"
+user_input = st.text_input("Tu:", key=input_key, label_visibility="collapsed")
 
 
 # Invio - also use a unique key here
