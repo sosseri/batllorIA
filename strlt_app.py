@@ -154,87 +154,18 @@ def recognize_long_speech(max_chunks=5):
 
     return full_text.strip()
 
-# Audio buffer queue
-audio_buffer = queue.Queue()
-
-class AudioProcessor(AudioProcessorBase):
-    def __init__(self) -> None:
-        self.sample_rate = 16000
-
-    def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
-        try:
-            pcm_data = frame.to_ndarray().flatten().astype(np.int16).tobytes()
-            audio_buffer.put(pcm_data)
-        except Exception as e:
-            print("Errore nel recv:", e)
-        return frame
-
-
-# Parla: usa gTTS e autoplay
-def speak_text(text):
-    tts = gTTS(text=text, lang="ca")
-    mp3_fp = BytesIO()
-    tts.write_to_fp(mp3_fp)
-    mp3_fp.seek(0)
-    b64_audio = base64.b64encode(mp3_fp.read()).decode()
-    st.components.v1.html(
-        f"""
-        <audio autoplay>
-            <source src="data:audio/mp3;base64,{b64_audio}" type="audio/mp3">
-        </audio>
-        """,
-        height=0,
-    )
-
-# Riconoscimento vocale
-def recognize_google_from_bytes(wav_bytes):
+# Trascrizione lato client in tempo reale
+def webrtc_speech_recognition():
     recognizer = sr.Recognizer()
-    with sr.AudioFile(wav_bytes) as source:
-        audio = recognizer.record(source)
+    mic = sr.Microphone()
+    with mic as source:
+        recognizer.adjust_for_ambient_noise(source, duration=0.5)
+        audio = recognizer.listen(source, timeout=5, phrase_time_limit=60)
     try:
-        return recognizer.recognize_google(audio, language="ca-ES")
-    except sr.UnknownValueError:
-        st.warning("No t'he entès.")
-    except sr.RequestError:
-        st.error("Error de connexió amb Google.")
-    return ""
-
-def record_audio_from_stream():
-    raw_audio = b""
-    silence_count = 0
-    silence_threshold = 500  # più permissivo
-
-    max_chunks = 100  # circa 10s
-    for _ in range(max_chunks):
-        try:
-            chunk = audio_buffer.get(timeout=0.5)
-        except queue.Empty:
-            break
-        if np.frombuffer(chunk, dtype=np.int16).max() < silence_threshold:
-            silence_count += 1
-            if silence_count > 8:
-                break
-        else:
-            silence_count = 0
-            raw_audio += chunk
-
-    if not raw_audio:
+        text = recognizer.recognize_google(audio, language="ca-ES")
+        return text
+    except Exception as e:
         return ""
-
-    wav_fp = BytesIO()
-    with wave.open(wav_fp, 'wb') as wf:
-        wf.setnchannels(1)
-        wf.setsampwidth(2)
-        wf.setframerate(16000)
-        wf.writeframes(raw_audio)
-    wav_fp.seek(0)
-    return recognize_google_from_bytes(wav_fp)
-
-
-# Estrai frasi per lettura
-#def split_sentences(text):
-#    return re.split(r'(?<=[.!?])\s+', text.strip())
-
 
 
 
@@ -270,31 +201,14 @@ col1, col2 = st.columns([10,1])
 with col1:
     user_input = st.text_input("Tu:", value=st.session_state.temp_speech_input, key="input_text")
 with col2:
-    if st.button("🎤"):
-        st.session_state.recording = True
-        st.session_state.temp_speech_input = ""
-        st.stop()
+    if st.button("🎤 Parla"):
+        st.info("🎙️ Escoltant... parla ara!")
+        result = webrtc_speech_recognition()
+        if result:
+            st.session_state.input_text = result
+            st.success(f"🔊 Has dit: «{result}»")
+            st.rerun()
 
-# Se stai registrando
-if st.session_state.recording:
-    st.info("🎤 Escoltant... parla ara!", icon="🎧")
-    ctx = webrtc_streamer(
-        key="mic",
-        audio_processor_factory=AudioProcessor,
-        media_stream_constraints={"audio": True, "video": False},
-        rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
-    )
-
-    def stop_after_delay():
-        time.sleep(6)
-        st.session_state.recording = False
-        speech_text = record_audio_from_stream()
-        if speech_text:
-            st.session_state.temp_speech_input = speech_text
-        # non chiamo st.rerun()
-
-    threading.Thread(target=stop_after_delay, daemon=True).start()
-    st.stop()
 
 
 
@@ -304,15 +218,6 @@ if st.button("Envia", key=send_button_key) and user_input.strip():
     user_msg = user_input.strip()
     # Add user message to chat history
     st.session_state.messages.append({"role": "Tu", "content": user_msg})
-    
-    ## API call with conversation ID
-    #response = requests.post(
-    #    "http://localhost:8000/chat", 
-    #    json={
-    #        "message": user_msg,
-    #        "conversation_id": st.session_state.conversation_id
-    #    }
-    #)
     
     response = requests.post(
         "https://batllori-chat.onrender.com/chat",
