@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <button id="mic" style="font-size:1.2em; background:none; border:none; cursor:pointer;">🎤 Parla</button>
+    <script>
+      const mic = document.getElementById("mic");
+      mic.onclick = () => {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'ca-ES';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.start();
+
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          // Invia il testo trascritto allo Streamlit Python side
+          window.parent.postMessage({ isStreamlitMessage: true, type: "streamlit:setComponentValue", value: transcript }, "*");
+        };
+      };
+    </script>
+  </body>
+</html>
