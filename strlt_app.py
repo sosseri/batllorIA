@@ -162,57 +162,42 @@ if "session_key" not in st.session_state:
     import uuid
     st.session_state.session_key = str(uuid.uuid4())[:8]
 
-# Display chat history
-for message in st.session_state.messages:
-    st.markdown(f"**{message['role']}:** {message['content']}")
+## Display chat history
+#for message in st.session_state.messages:
+#    st.markdown(f"**{message['role']}:** {message['content']}")
 
-# Singola barra + microfono integrato via HTML
-st.markdown("""
-<style>
-.input-container {
-  display: flex;
-  align-items: center;
-}
-.input-container input {
-  flex: 1;
-  padding: 0.5em;
-  font-size: 1em;
-}
-.input-container button {
-  margin-left: 0.5em;
-  font-size: 1.2em;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-</style>
-<div class="input-container">
-  <input id="user_input_box" placeholder="Parla o escriu..." />
-  <button id="mic_btn">🎤</button>
+# Inizializza input_text se non esiste
+if "input_text" not in st.session_state:
+    st.session_state.input_text = ""
+
+# Render campo input
+user_input = st.text_input("Tu:", key="input_text")
+
+# Microfono + riconoscimento vocale integrato (Web Speech API)
+components.html(f"""
+<div style="position: absolute; right: 3.5em; top: 9.5em;">
+  <button id="mic" style="background:none; border:none; font-size:1.5em;">🎤</button>
 </div>
 <script>
-const inputBox = window.parent.document.getElementById("user_input_box");
-const micBtn = window.parent.document.getElementById("mic_btn");
-
-micBtn.onclick = () => {
-  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-  recognition.lang = 'ca-ES';
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-  recognition.start();
-  recognition.onresult = (event) => {
-    const text = event.results[0][0].transcript;
-    inputBox.value = text;
-    const inputEvent = new Event("input", { bubbles: true });
-    inputBox.dispatchEvent(inputEvent);
-  };
-};
+  const mic = document.getElementById("mic");
+  mic.onclick = () => {{
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'ca-ES';
+    recognition.interimResults = false;
+    recognition.start();
+    recognition.onresult = (event) => {{
+      const text = event.results[0][0].transcript;
+      const input = window.parent.document.querySelector('input[data-testid="stTextInput"]');
+      if (input) {{
+        input.value = text;
+        const inputEvent = new Event("input", {{ bubbles: true }});
+        input.dispatchEvent(inputEvent);
+      }}
+    }};
+  }};
 </script>
-""", unsafe_allow_html=True)
+""", height=0)
 
-# Nascondi il vero text_input (che serve per backend)
-input_key = f"input_text_{st.session_state.session_key}"
-user_input = st.text_input("Tu:", key=input_key, label_visibility="collapsed")
 
 
 # Invio - also use a unique key here
