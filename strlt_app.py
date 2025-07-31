@@ -162,41 +162,47 @@ if "session_key" not in st.session_state:
     import uuid
     st.session_state.session_key = str(uuid.uuid4())[:8]
 
-## Display chat history
-#for message in st.session_state.messages:
-#    st.markdown(f"**{message['role']}:** {message['content']}")
+# Display chat history
+for message in st.session_state.messages:
+    st.markdown(f"**{message['role']}:** {message['content']}")
 
 # Inizializza input_text se non esiste
 if "input_text" not in st.session_state:
     st.session_state.input_text = ""
 
-# Render campo input
-user_input = st.text_input("Tu:", key="input_text")
+col1, col2 = st.columns([10, 1])
 
-# Microfono + riconoscimento vocale integrato (Web Speech API)
-components.html(f"""
-<div style="position: absolute; right: 3.5em; top: 9.5em;">
-  <button id="mic" style="background:none; border:none; font-size:1.5em;">🎤</button>
-</div>
-<script>
-  const mic = document.getElementById("mic");
-  mic.onclick = () => {{
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'ca-ES';
-    recognition.interimResults = false;
-    recognition.start();
-    recognition.onresult = (event) => {{
-      const text = event.results[0][0].transcript;
-      const input = window.parent.document.querySelector('input[data-testid="stTextInput"]');
-      if (input) {{
-        input.value = text;
-        const inputEvent = new Event("input", {{ bubbles: true }});
-        input.dispatchEvent(inputEvent);
-      }}
-    }};
-  }};
-</script>
-""", height=0)
+# Colonna principale: campo di input testuale
+with col1:
+    if "input_text" not in st.session_state:
+        st.session_state.input_text = ""
+
+    user_input = st.text_input("Tu:", key="input_text", label_visibility="collapsed")
+
+# Colonna secondaria: bottone microfono con JS
+with col2:
+    components.html("""
+    <button id="mic" style="background:none; border:none; font-size:1.5em; cursor:pointer;" title="Prem per parlar">🎤</button>
+    <script>
+      const mic = document.getElementById("mic");
+      mic.onclick = () => {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'ca-ES';
+        recognition.interimResults = false;
+        recognition.start();
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          const inputBox = window.parent.document.querySelector('input[data-testid="stTextInput"]');
+          if (inputBox) {
+            inputBox.value = transcript;
+            const inputEvent = new Event("input", { bubbles: true });
+            inputBox.dispatchEvent(inputEvent);
+          }
+        };
+      };
+    </script>
+    """, height=40)
+
 
 
 
