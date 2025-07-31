@@ -9,12 +9,6 @@ import time
 import speech_recognition as sr
 import numpy as np
 import uuid  # Add the missing uuid import here
-from streamlit_webrtc import webrtc_streamer, AudioProcessorBase
-import av
-import queue
-import threading
-import wave
-
 
 def generate_audio_base64_gtts(text):
     tts = gTTS(text=text, lang='ca')
@@ -33,14 +27,6 @@ def play_audio_gtts(text):
     </audio>
     """
     components.html(audio_html, height=80)
-
-# UI
-st.set_page_config(page_title="✏️Xat amb Batllori")
-
-st.header("💬 Xat amb BatllorIA")
-st.subheader("L'Intelligencia Artificial de la familia Batllori")
-
-# response = requests.post("https://batllori-chat.onrender.com/chat", json={"message": user_input})
 
 # Utils
 def split_text_into_sentences(text):
@@ -155,60 +141,70 @@ def recognize_long_speech(max_chunks=5):
     return full_text.strip()
 
 
+# UI
+#st.title("✏️ Xat amb Batllor-IA")
+st.header("💬 Xat amb BatllorIA")
+st.subheader("L'Intelligencia Artificial de la familia Batllori")
+
+# Page config
+st.set_page_config(page_title="Xat amb Batllori")
+
+# response = requests.post("https://batllori-chat.onrender.com/chat", json={"message": user_input})
 # Init states
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "temp_speech_input" not in st.session_state:
+    st.session_state.temp_speech_input = ""
 if "conversation_id" not in st.session_state:
     st.session_state.conversation_id = None
 if "session_key" not in st.session_state:
     # Generate a unique session key to avoid duplicate element keys
     import uuid
     st.session_state.session_key = str(uuid.uuid4())[:8]
-if "user_input" not in st.session_state:
-    st.session_state.user_input = ""
-if "recording" not in st.session_state:
-    st.session_state.recording = False
-if "temp_speech_input" not in st.session_state:
-    st.session_state.temp_speech_input = ""
-
-
-
 
 # Display chat history
 for message in st.session_state.messages:
     st.markdown(f"**{message['role']}:** {message['content']}")
 
-# Input + bottone microfono sulla destra
-st.text_input("Tu:", key="input_text", label_visibility="collapsed")
+# Layout
+col1, col2 = st.columns([10, 1])
+with col1:
+    # Get current speech input if available
+    current_input = st.session_state.temp_speech_input if "temp_speech_input" in st.session_state else ""
+    # Use a dynamic key with session_key to avoid duplicates
+    input_key = f"input_text_{st.session_state.session_key}"
+    user_input = st.text_input("Tu:", key=input_key, value=current_input)
 
-# HTML/JS: microfono browser (speech-to-text)
-components.html("""
-<div style="position:relative; top:-70px; left:92%;">
-  <button id="mic" style="background:none; border:none; font-size:1.5em;">🎤</button>
-</div>
-<script>
-const mic = document.getElementById("mic");
-mic.onclick = () => {
-  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-  recognition.lang = 'ca-ES';
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-  recognition.start();
-  recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript;
-    window.parent.postMessage({text: transcript}, "*");
-  };
-};
-window.addEventListener("message", (event) => {
-  const inputBoxes = window.parent.document.querySelectorAll("input");
-  if (event.data.text && inputBoxes.length > 0) {
-    inputBoxes[0].value = event.data.text;
-    const inputEvent = new Event("input", { bubbles: true });
-    inputBoxes[0].dispatchEvent(inputEvent);
-  }
-});
-</script>
-""", height=0)
+with col2:
+    # HTML/JS: microfono browser (speech-to-text)
+    components.html("""
+    <div style="position:relative; top:-70px; left:92%;">
+      <button id="mic" style="background:none; border:none; font-size:1.5em;">🎤</button>
+    </div>
+    <script>
+    const mic = document.getElementById("mic");
+    mic.onclick = () => {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'ca-ES';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.start();
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        window.parent.postMessage({text: transcript}, "*");
+      };
+    };
+    window.addEventListener("message", (event) => {
+      const inputBoxes = window.parent.document.querySelectorAll("input");
+      if (event.data.text && inputBoxes.length > 0) {
+        inputBoxes[0].value = event.data.text;
+        const inputEvent = new Event("input", { bubbles: true });
+        inputBoxes[0].dispatchEvent(inputEvent);
+      }
+    });
+    </script>
+    """, height=0)
+
 
 # Invio - also use a unique key here
 send_button_key = f"send_button_{st.session_state.session_key}"
@@ -217,6 +213,7 @@ if st.button("Envia", key=send_button_key) and user_input.strip():
     # Add user message to chat history
     st.session_state.messages.append({"role": "Tu", "content": user_msg})
     
+
     response = requests.post(
         "https://batllori-chat.onrender.com/chat",
         json={
@@ -265,4 +262,4 @@ if st.button("Reiniciar conversa", key=reset_button_key):
     st.session_state.temp_speech_input = ""
 
 
-    st.session_state.session_key = str(uuid.uuid4())[:8]    # Generate a new session key to ensure fresh UI elements    st.rerun()
+    st.session_state.session_key = str(uuid.uuid4())[:8]    # Generate a new session key to ensure fresh UI elements
