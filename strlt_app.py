@@ -242,8 +242,6 @@ def record_audio_from_stream():
 # Init states
 if "messages" not in st.session_state:
     st.session_state.messages = []
-if "temp_speech_input" not in st.session_state:
-    st.session_state.temp_speech_input = ""
 if "conversation_id" not in st.session_state:
     st.session_state.conversation_id = None
 if "session_key" not in st.session_state:
@@ -254,7 +252,8 @@ if "user_input" not in st.session_state:
     st.session_state.user_input = ""
 if "recording" not in st.session_state:
     st.session_state.recording = False
-
+if "temp_speech_input" not in st.session_state:
+    st.session_state.temp_speech_input = ""
 
 
 
@@ -263,34 +262,39 @@ if "recording" not in st.session_state:
 for message in st.session_state.messages:
     st.markdown(f"**{message['role']}:** {message['content']}")
 
-# Layout
-col1, col2 = st.columns([10, 1])
+
+
+
+# Barra input + pulsante mic
+col1, col2 = st.columns([10,1])
 with col1:
-    # Get current speech input if available
-    current_input = st.session_state.temp_speech_input if "temp_speech_input" in st.session_state else ""
-    # Use a dynamic key with session_key to avoid duplicates
-    input_key = f"input_text_{st.session_state.session_key}"
-    user_input = st.text_input("Tu:", key=input_key, value=current_input)
+    user_input = st.text_input("Tu:", value=st.session_state.temp_speech_input, key="input_text")
 with col2:
     if st.button("🎤"):
         st.session_state.recording = True
         st.session_state.temp_speech_input = ""
-        st.stop()  # ferma il resto del codice e attendi ripetizione
+        st.stop()
 
+# Se stai registrando
 if st.session_state.recording:
-    webrtc_ctx = webrtc_streamer(...)
-    threading.Thread(target=stop_after_delay, daemon=True).start()
-    st.stop()  # ferma qui finché la registrazione non cambia lo stato
-    
+    st.info("🎤 Escoltant... parla ara!", icon="🎧")
+    ctx = webrtc_streamer(
+        key="mic",
+        audio_processor_factory=AudioProcessor,
+        media_stream_constraints={"audio": True, "video": False},
+        rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+    )
 
     def stop_after_delay():
         time.sleep(6)
+        st.session_state.recording = False
         speech_text = record_audio_from_stream()
         if speech_text:
             st.session_state.temp_speech_input = speech_text
-
+        # non chiamo st.rerun()
 
     threading.Thread(target=stop_after_delay, daemon=True).start()
+    st.stop()
 
 
 
