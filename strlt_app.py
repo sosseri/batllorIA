@@ -9,9 +9,7 @@ import time
 import speech_recognition as sr
 import numpy as np
 import uuid  # Add the missing uuid import here
-from streamlit.components.v1 import declare_component
 
-speech_input = declare_component("speech_input", path="")
 
 def get_spoken_text():
     return speech_input(default="")
@@ -176,19 +174,46 @@ for message in st.session_state.messages:
 if "input_text" not in st.session_state:
     st.session_state.input_text = ""
 
-# Campo input reale
+import streamlit.components.v1 as components
+
+# Barra di input
 user_input = st.text_input("Tu:", key="input_text")
 
+# Microfono HTML (funziona anche su mobile e Streamlit Cloud)
+components.html("""
+<div style="margin-top:10px;">
+  <button id="mic" style="font-size:1.2em; background:none; border:none; cursor:pointer;">🎤 Parla</button>
+  <input id="speech_result" type="hidden" />
+</div>
 
-spoken_text = get_spoken_text()
+<script>
+  const mic = document.getElementById("mic");
+  const resultField = document.getElementById("speech_result");
 
-# Aggiorna la barra di input se c'è nuovo testo trascritto
-if spoken_text and st.session_state.get("input_text", "") != spoken_text:
-    st.session_state.input_text = spoken_text
-    st.rerun()
-    if "input_text" in st.session_state:
-        del st.session_state.input_text
+  mic.onclick = () => {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'ca-ES';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.start();
 
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      resultField.value = transcript;
+      window.parent.postMessage({ text: transcript }, "*");
+    };
+  };
+
+  window.addEventListener("message", (event) => {
+    const inputBox = window.parent.document.querySelector('input[data-testid="stTextInput"]');
+    if (event.data.text && inputBox) {
+      inputBox.value = event.data.text;
+      const inputEvent = new Event("input", { bubbles: true });
+      inputBox.dispatchEvent(inputEvent);
+    }
+  });
+</script>
+""", height=70)
 
 
 # Invio - also use a unique key here
@@ -198,6 +223,8 @@ if st.button("Envia", key=send_button_key) and user_input.strip():
     # Add user message to chat history
     st.session_state.messages.append({"role": "Tu", "content": user_msg})
     
+    if "input_text" in st.session_state:
+        del st.session_state.input_text
 
     response = requests.post(
         "https://batllori-chat.onrender.com/chat",
@@ -236,6 +263,7 @@ if st.button("Envia", key=send_button_key) and user_input.strip():
     st.rerun()
     if "input_text" in st.session_state:
         del st.session_state.input_text
+        st.session_state.temp_speech_input = ""
 
 
 # Add a reset button to clear the conversation - with unique key
