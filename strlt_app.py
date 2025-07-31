@@ -170,20 +170,13 @@ for message in st.session_state.messages:
 if "input_text" not in st.session_state:
     st.session_state.input_text = ""
 
-col1, col2 = st.columns([10, 1])
-
-# Inizializza input_text se non esiste
-if "input_text" not in st.session_state:
-    st.session_state.input_text = ""
-
 # Input visibile
 user_input = st.text_input("Tu:", key="input_text")
 
-# Bottone microfono HTML (sotto alla barra, visibile)
+# Microfono sotto (comunica col campo input reale via postMessage)
 components.html("""
-<div style="text-align: left; margin-top: -10px; margin-bottom: 10px;">
-  <button id="mic" style="font-size: 1.5em; background: none; border: none; cursor: pointer;" title="Prem per parlar">🎤 Parla</button>
-</div>
+<button id="mic" style="font-size: 1.2em; margin-top: 10px; background: none; border: none; cursor: pointer;">🎤 Parla</button>
+
 <script>
   const mic = document.getElementById("mic");
   mic.onclick = () => {
@@ -191,18 +184,32 @@ components.html("""
     recognition.lang = 'ca-ES';
     recognition.interimResults = false;
     recognition.start();
+
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      const inputBox = window.parent.document.querySelector('input[data-testid="stTextInput"]');
-      if (inputBox) {
-        inputBox.value = transcript;
-        const inputEvent = new Event("input", { bubbles: true });
-        inputBox.dispatchEvent(inputEvent);
-      }
+      // manda il testo al genitore (Streamlit)
+      window.parent.postMessage({ type: 'speech', text: transcript }, '*');
     };
   };
 </script>
-""", height=60)
+""", height=40)
+
+# Codice Streamlit per ricevere il messaggio del microfono
+components.html(f"""
+<script>
+  window.addEventListener("message", (event) => {{
+    if (event.data.type === "speech") {{
+      const text = event.data.text;
+      const inputBox = window.parent.document.querySelector('input[data-testid="stTextInput"]');
+      if (inputBox) {{
+        inputBox.value = text;
+        const inputEvent = new Event("input", {{ bubbles: true }});
+        inputBox.dispatchEvent(inputEvent);
+      }}
+    }}
+  }});
+</script>
+""", height=0)
 
 
 
