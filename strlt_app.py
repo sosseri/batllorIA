@@ -154,21 +154,6 @@ def recognize_long_speech(max_chunks=5):
 
     return full_text.strip()
 
-# Trascrizione lato client in tempo reale
-def webrtc_speech_recognition():
-    recognizer = sr.Recognizer()
-    mic = sr.Microphone()
-    with mic as source:
-        recognizer.adjust_for_ambient_noise(source, duration=0.5)
-        audio = recognizer.listen(source, timeout=5, phrase_time_limit=60)
-    try:
-        text = recognizer.recognize_google(audio, language="ca-ES")
-        return text
-    except Exception as e:
-        return ""
-
-
-
 
 # Init states
 if "messages" not in st.session_state:
@@ -193,24 +178,37 @@ if "temp_speech_input" not in st.session_state:
 for message in st.session_state.messages:
     st.markdown(f"**{message['role']}:** {message['content']}")
 
+# Input + bottone microfono sulla destra
+st.text_input("Tu:", key="input_text", label_visibility="collapsed")
 
-
-
-# Barra input + pulsante mic
-col1, col2 = st.columns([10,1])
-with col1:
-    user_input = st.text_input("Tu:", value=st.session_state.temp_speech_input, key="input_text")
-with col2:
-    if st.button("🎤 Parla"):
-        st.info("🎙️ Escoltant... parla ara!")
-        result = webrtc_speech_recognition()
-        if result:
-            st.session_state.input_text = result
-            st.success(f"🔊 Has dit: «{result}»")
-            st.rerun()
-
-
-
+# HTML/JS: microfono browser (speech-to-text)
+components.html("""
+<div style="position:relative; top:-70px; left:92%;">
+  <button id="mic" style="background:none; border:none; font-size:1.5em;">🎤</button>
+</div>
+<script>
+const mic = document.getElementById("mic");
+mic.onclick = () => {
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = 'ca-ES';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  recognition.start();
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    window.parent.postMessage({text: transcript}, "*");
+  };
+};
+window.addEventListener("message", (event) => {
+  const inputBoxes = window.parent.document.querySelectorAll("input");
+  if (event.data.text && inputBoxes.length > 0) {
+    inputBoxes[0].value = event.data.text;
+    const inputEvent = new Event("input", { bubbles: true });
+    inputBoxes[0].dispatchEvent(inputEvent);
+  }
+});
+</script>
+""", height=0)
 
 # Invio - also use a unique key here
 send_button_key = f"send_button_{st.session_state.session_key}"
