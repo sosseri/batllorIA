@@ -170,47 +170,36 @@ for message in st.session_state.messages:
 if "input_text" not in st.session_state:
     st.session_state.input_text = ""
 
-# Input visibile
+# Campo input reale
 user_input = st.text_input("Tu:", key="input_text")
 
-# Microfono sotto (comunica col campo input reale via postMessage)
+# Bottone microfono + trascrizione da browser
 components.html("""
-<button id="mic" style="font-size: 1.2em; margin-top: 10px; background: none; border: none; cursor: pointer;">🎤 Parla</button>
+  <div style="margin-top:10px;">
+    <button id="mic" style="font-size:1.2em; background:none; border:none; cursor:pointer;">🎤 Parla</button>
+  </div>
+  <script>
+    const mic = document.getElementById("mic");
+    mic.onclick = () => {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'ca-ES';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
 
-<script>
-  const mic = document.getElementById("mic");
-  mic.onclick = () => {
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'ca-ES';
-    recognition.interimResults = false;
-    recognition.start();
+      recognition.start();
 
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      // manda il testo al genitore (Streamlit)
-      window.parent.postMessage({ type: 'speech', text: transcript }, '*');
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        const inputs = window.parent.document.querySelectorAll('input[data-testid="stTextInput"]');
+        if (inputs.length > 0) {
+          inputs[0].value = transcript;
+          const inputEvent = new Event("input", { bubbles: true });
+          inputs[0].dispatchEvent(inputEvent);
+        }
+      };
     };
-  };
-</script>
-""", height=40)
-
-# Codice Streamlit per ricevere il messaggio del microfono
-components.html(f"""
-<script>
-  window.addEventListener("message", (event) => {{
-    if (event.data.type === "speech") {{
-      const text = event.data.text;
-      const inputBox = window.parent.document.querySelector('input[data-testid="stTextInput"]');
-      if (inputBox) {{
-        inputBox.value = text;
-        const inputEvent = new Event("input", {{ bubbles: true }});
-        inputBox.dispatchEvent(inputEvent);
-      }}
-    }}
-  }});
-</script>
-""", height=0)
-
+  </script>
+""", height=60)
 
 
 # Invio - also use a unique key here
