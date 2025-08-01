@@ -67,13 +67,8 @@ components.html("""
       const transcript = event.results[0][0].transcript;
       debug.innerText = "🔊 Has dit: " + transcript;
 
-      // Inserisce la trascrizione nella vera barra input di Streamlit
-      const inputBox = window.parent.document.querySelector('input[data-testid="stTextInput"]');
-      if (inputBox) {
-        inputBox.value = transcript;
-        const inputEvent = new Event("input", { bubbles: true });
-        inputBox.dispatchEvent(inputEvent);
-      }
+      // Invio a Streamlit
+      window.parent.postMessage({type: "streamlit:speech", text: transcript}, "*");
     };
 
     recognition.onerror = () => {
@@ -87,7 +82,22 @@ components.html("""
     };
   };
 </script>
-""", height=120)
+""", height=130)
+
+# Listener che legge il testo parlato dal postMessage JS
+components.html("""
+<script>
+  window.addEventListener("message", (event) => {
+    if (event.data && event.data.type === "streamlit:speech") {
+      const inputBox = window.parent.document.querySelector('input[data-testid="stTextInput"]');
+      if (inputBox) {
+        inputBox.value = event.data.text;
+        inputBox.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    }
+  });
+</script>
+""", height=0)
 
 
 # Funzioni audio
