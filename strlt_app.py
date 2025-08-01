@@ -229,12 +229,9 @@ components.html("""
 
 import urllib.parse
 
-params = st.query_params()
-if "spoken_text" in params:
-    text = urllib.parse.unquote(params["spoken_text"][0])
+if st.query_params["spoken_text"]:
+    text = urllib.parse.unquote(st.query_params["spoken_text"][0])
     st.session_state.spoken_text = text
-    # forza reload senza parametri
-    st.query_params()
     st.write("🪵 [DEBUG] Contingut de la barra:", st.session_state.spoken_text)
 
 # Invio - also use a unique key here
