@@ -3,6 +3,7 @@ import requests
 from gtts import gTTS
 from io import BytesIO
 import base64
+import streamlit.components.v1 as components
 import re
 import time
 import numpy as np
@@ -20,97 +21,77 @@ st.subheader("L'Intelligència Artificial de la família Batllori")
 for key, default in {
     "messages": [],
     "conversation_id": None,
-    "speech_input": "",
+    "session_key": str(uuid.uuid4())[:8],
+    "speech_text": "",
 }.items():
     if key not in st.session_state:
         st.session_state[key] = default
 
-# Gestione del testo vocale dai query parameters
+# Get spoken_text from URL
 params = st.query_params
-speech_param = params.get("speech", "")
-if speech_param and speech_param != st.session_state.speech_input:
-    decoded_speech = urllib.parse.unquote(speech_param)
-    st.session_state.speech_input = decoded_speech
+spoken = params.get("spoken_text", "")
+spoken = urllib.parse.unquote(spoken) if spoken else ""
+
+# Pulizia parametri URL
+if spoken:
+    st.session_state.speech_text = spoken
     st.query_params.clear()
 
 # Mostra cronologia
 for msg in st.session_state.messages:
     st.markdown(f"**{msg['role']}:** {msg['content']}")
 
-# Input field
-user_input = st.text_input("Tu:", value=st.session_state.speech_input, key="user_input")
+# Input field (usa speech_text se presente, altrimenti vuoto)
+default_input = st.session_state.speech_text if st.session_state.speech_text else ""
+input_key = f"input_text_{st.session_state.session_key}"
+user_input = st.text_input("Tu:", key=input_key, value=default_input)
 
-# Microfono - usa st.html invece di components.html (se disponibile)
-try:
-    # Prova prima st.html (Streamlit >= 1.29)
-    st.html("""
+# Microfono + trascrizione - renderizza solo se non c'è speech_text in attesa
+if not st.session_state.speech_text:
+    components.html("""
     <div style="margin-top:10px;">
       <button id="mic" style="font-size:1.3em; padding:0.5em 1.5em; cursor:pointer;">🎤 Parla</button>
-      <p id="status" style="font-size:1em; font-style:italic; color:#555;"></p>
+      <p id="debug_text" style="font-size:1em; font-style:italic; color:#555;"></p>
     </div>
     <script>
-    if (!document.getElementById("mic").hasAttribute("data-listener-added")) {
-        document.getElementById("mic").setAttribute("data-listener-added", "true");
-        
-        document.getElementById("mic").onclick = function() {
-            const status = document.getElementById("status");
-            
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                status.innerText = "⚠️ Riconoscimento vocale non supportato";
-                return;
-            }
-            
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'ca-ES';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
-            
-            status.innerText = "🎙️ Escoltant...";
-            recognition.start();
-            
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                status.innerText = "🔊 Trascritto: " + transcript;
-                
-                setTimeout(() => {
-                    const currentUrl = window.location.pathname;
-                    window.location.href = currentUrl + "?speech=" + encodeURIComponent(transcript);
-                }, 1500);
-            };
-            
-            recognition.onerror = function(event) {
-                status.innerText = "⚠️ Errore: " + event.error;
-            };
-            
-            recognition.onend = function() {
-                if (!status.innerText.includes("Trascritto")) {
-                    status.innerText = "⏹️ Nessun testo rilevato";
-                }
-            };
+      const mic = document.getElementById("mic");
+      const debug = document.getElementById("debug_text");
+
+      mic.onclick = () => {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'ca-ES';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.start();
+        debug.innerText = "🎙️ Escoltant...";
+
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          debug.innerText = "🔊 Has dit: " + transcript;
+
+          // Redirect invece di postMessage
+          setTimeout(() => {
+            const currentUrl = window.location.pathname;
+            window.location.href = currentUrl + "?spoken_text=" + encodeURIComponent(transcript);
+          }, 1500);
         };
-    }
+
+        recognition.onerror = () => {
+          debug.innerText = "⚠️ Error durant el reconeixement de veu.";
+        };
+
+        recognition.onend = () => {
+          if (!debug.innerText.startsWith("🔊")) {
+            debug.innerText = "⏹️ No s'ha detectat veu.";
+          }
+        };
+      };
     </script>
-    """)
-except AttributeError:
-    # Fallback per versioni più vecchie di Streamlit
-    st.markdown("""
-    <div style="margin-top:10px; padding:10px; border:1px solid #ccc; border-radius:5px;">
-        <p><strong>🎤 Riconoscimento Vocale</strong></p>
-        <p>Per utilizzare il riconoscimento vocale, aggiorna Streamlit alla versione più recente o usa il campo di testo qui sotto.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# Sezione alternativa per il riconoscimento vocale manuale
-st.markdown("---")
-st.subheader("Alternativa: Inserimento Manuale")
-
-# Pulsante per simulare la trascrizione vocale
-if st.button("🎤 Simula Riconoscimento Vocale"):
-    # Mostra un campo di testo per inserire manualmente il testo "trascritto"
-    manual_speech = st.text_input("Inserisci il testo che avresti detto:", key="manual_speech")
-    if manual_speech:
-        st.session_state.speech_input = manual_speech
-        st.rerun()
+    """, height=130)
+else:
+    # Mostra messaggio di conferma quando c'è testo trascritto
+    st.success(f"🎤 Testo trascritto: '{st.session_state.speech_text}' - Modifica se necessario e premi Envia")
 
 # Funzioni audio
 def generate_audio_base64(text):
@@ -122,26 +103,14 @@ def play_audio_sequence(sentences):
     if isinstance(sentences, str):
         sentences = re.split(r'(?<=[.!?])\s+', sentences.strip())
     for s in sentences:
-        try:
-            b64 = generate_audio_base64(s)
-            # Usa st.html per l'audio se disponibile
-            try:
-                st.html(f"""
-                <audio autoplay>
-                    <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-                </audio>
-                """)
-            except AttributeError:
-                # Fallback per versioni più vecchie
-                st.markdown(f"""
-                <audio autoplay>
-                    <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-                </audio>
-                """, unsafe_allow_html=True)
-            time.sleep(min(5, len(s.split()) * 0.5))
-        except Exception as e:
-            st.error(f"Errore nella generazione audio: {e}")
-            break
+        b64 = generate_audio_base64(s)
+        audio_html = f"""
+        <audio autoplay>
+            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+        </audio>
+        """
+        components.html(audio_html, height=0)
+        time.sleep(min(5, len(s.split()) * 0.5))
 
 # Invia messaggio
 if st.button("Envia") and user_input.strip():
@@ -164,8 +133,9 @@ if st.button("Envia") and user_input.strip():
     st.markdown("**Batllori:** " + bot_response)
     play_audio_sequence(bot_response)
 
-    # Reset del testo vocale
-    st.session_state.speech_input = ""
+    # Reset del testo vocale e session_key
+    st.session_state.speech_text = ""
+    st.session_state.session_key = str(uuid.uuid4())[:8]
     st.rerun()
 
 # Reset chat
@@ -176,5 +146,6 @@ if st.button("Reiniciar conversa"):
         pass
     st.session_state.messages = []
     st.session_state.conversation_id = None
-    st.session_state.speech_input = ""
+    st.session_state.speech_text = ""
+    st.session_state.session_key = str(uuid.uuid4())[:8]
     st.rerun()
