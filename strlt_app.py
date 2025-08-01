@@ -229,10 +229,13 @@ components.html("""
 
 import urllib.parse
 
-#if st.query_params["spoken_text"]:
-#    text = urllib.parse.unquote(st.query_params["spoken_text"][0])
-#    st.session_state.spoken_text = text
-#    st.write("🪵 [DEBUG] Contingut de la barra:", st.session_state.spoken_text)
+if "spoken_text" not in st.session_state:
+    params = st.experimental_get_query_params()
+    spoken = params.get("spoken_text", [""])[0]
+    st.session_state.spoken_text = spoken or ""
+    st.session_state.input_text = spoken or ""
+    st.experimental_set_query_params()  # pulisce l'URL param
+
 
 # Invio - also use a unique key here
 send_button_key = f"send_button_{st.session_state.session_key}"
