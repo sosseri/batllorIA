@@ -40,64 +40,108 @@ for msg in st.session_state.messages:
 # Input field
 user_input = st.text_input("Tu:", value=st.session_state.speech_input, key="user_input")
 
-# Sezione riconoscimento vocale semplificata
-st.markdown("---")
-col1, col2 = st.columns([1, 3])
-
-with col1:
-    if st.button("🎤 Parla", help="Clicca per attivare il riconoscimento vocale"):
-        st.markdown("""
-        <script>
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+# Microfono - usa st.html invece di components.html (se disponibile)
+try:
+    # Prova prima st.html (Streamlit >= 1.29)
+    st.html("""
+    <div style="margin-top:10px;">
+      <button id="mic" style="font-size:1.3em; padding:0.5em 1.5em; cursor:pointer;">🎤 Parla</button>
+      <p id="status" style="font-size:1em; font-style:italic; color:#555;"></p>
+    </div>
+    <script>
+    if (!document.getElementById("mic").hasAttribute("data-listener-added")) {
+        document.getElementById("mic").setAttribute("data-listener-added", "true");
+        
+        document.getElementById("mic").onclick = function() {
+            const status = document.getElementById("status");
+            
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                status.innerText = "⚠️ Riconoscimento vocale non supportato";
+                return;
+            }
+            
             const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             recognition.lang = 'ca-ES';
             recognition.interimResults = false;
             recognition.maxAlternatives = 1;
             
+            status.innerText = "🎙️ Escoltant...";
             recognition.start();
             
             recognition.onresult = function(event) {
                 const transcript = event.results[0][0].transcript;
-                const currentUrl = window.location.pathname;
-                window.location.href = currentUrl + "?speech=" + encodeURIComponent(transcript);
+                status.innerText = "🔊 Trascritto: " + transcript;
+                
+                setTimeout(() => {
+                    const currentUrl = window.location.pathname;
+                    window.location.href = currentUrl + "?speech=" + encodeURIComponent(transcript);
+                }, 1500);
             };
-        } else {
-            alert('Riconoscimento vocale non supportato dal browser');
-        }
-        </script>
-        """, unsafe_allow_html=True)
+            
+            recognition.onerror = function(event) {
+                status.innerText = "⚠️ Errore: " + event.error;
+            };
+            
+            recognition.onend = function() {
+                if (!status.innerText.includes("Trascritto")) {
+                    status.innerText = "⏹️ Nessun testo rilevato";
+                }
+            };
+        };
+    }
+    </script>
+    """)
+except AttributeError:
+    # Fallback per versioni più vecchie di Streamlit
+    st.markdown("""
+    <div style="margin-top:10px; padding:10px; border:1px solid #ccc; border-radius:5px;">
+        <p><strong>🎤 Riconoscimento Vocale</strong></p>
+        <p>Per utilizzare il riconoscimento vocale, aggiorna Streamlit alla versione più recente o usa il campo di testo qui sotto.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-with col2:
-    st.info("Clicca 'Parla' e pronuncia la tua frase in catalano. Il testo apparirà automaticamente nel campo sopra.")
+# Sezione alternativa per il riconoscimento vocale manuale
+st.markdown("---")
+st.subheader("Alternativa: Inserimento Manuale")
 
-# Alternativa manuale
-st.markdown("**Alternativa:** Puoi anche digitare direttamente nel campo di testo sopra.")
+# Pulsante per simulare la trascrizione vocale
+if st.button("🎤 Simula Riconoscimento Vocale"):
+    # Mostra un campo di testo per inserire manualmente il testo "trascritto"
+    manual_speech = st.text_input("Inserisci il testo che avresti detto:", key="manual_speech")
+    if manual_speech:
+        st.session_state.speech_input = manual_speech
+        st.rerun()
 
 # Funzioni audio
 def generate_audio_base64(text):
-    try:
-        tts = gTTS(text=text, lang='ca')
-        buf = BytesIO(); tts.write_to_fp(buf); buf.seek(0)
-        return base64.b64encode(buf.read()).decode()
-    except Exception as e:
-        st.error(f"Errore nella generazione audio: {e}")
-        return None
+    tts = gTTS(text=text, lang='ca')
+    buf = BytesIO(); tts.write_to_fp(buf); buf.seek(0)
+    return base64.b64encode(buf.read()).decode()
 
 def play_audio_sequence(sentences):
     if isinstance(sentences, str):
         sentences = re.split(r'(?<=[.!?])\s+', sentences.strip())
-    
     for s in sentences:
-        if s.strip():
-            b64 = generate_audio_base64(s.strip())
-            if b64:
-                audio_html = f"""
+        try:
+            b64 = generate_audio_base64(s)
+            # Usa st.html per l'audio se disponibile
+            try:
+                st.html(f"""
                 <audio autoplay>
                     <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
                 </audio>
-                """
-                st.markdown(audio_html, unsafe_allow_html=True)
-                time.sleep(min(5, len(s.split()) * 0.5))
+                """)
+            except AttributeError:
+                # Fallback per versioni più vecchie
+                st.markdown(f"""
+                <audio autoplay>
+                    <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+                </audio>
+                """, unsafe_allow_html=True)
+            time.sleep(min(5, len(s.split()) * 0.5))
+        except Exception as e:
+            st.error(f"Errore nella generazione audio: {e}")
+            break
 
 # Invia messaggio
 if st.button("Envia") and user_input.strip():
@@ -118,8 +162,6 @@ if st.button("Envia") and user_input.strip():
     st.session_state.messages.append({"role": "BatllorIA", "content": bot_response})
     st.markdown("**Tu:** " + user_msg)
     st.markdown("**Batllori:** " + bot_response)
-    
-    # Riproduci audio della risposta
     play_audio_sequence(bot_response)
 
     # Reset del testo vocale
@@ -136,8 +178,3 @@ if st.button("Reiniciar conversa"):
     st.session_state.conversation_id = None
     st.session_state.speech_input = ""
     st.rerun()
-
-# Informazioni di debug
-with st.expander("Debug Info"):
-    st.write("Session State:", st.session_state)
-    st.write("Query Params:", dict(st.query_params))
