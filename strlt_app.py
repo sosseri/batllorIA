@@ -22,16 +22,18 @@ for key, default in {
     "messages": [],
     "conversation_id": None,
     "speech_input": "",
+    "component_key": str(uuid.uuid4())[:8],
 }.items():
     if key not in st.session_state:
         st.session_state[key] = default
 
-# Gestione del testo vocale dai query parameters
+# Gestione del testo vocale dai query parameters - SOLO UNA VOLTA
 params = st.query_params
 speech_param = params.get("speech", "")
 if speech_param and speech_param != st.session_state.speech_input:
     decoded_speech = urllib.parse.unquote(speech_param)
     st.session_state.speech_input = decoded_speech
+    # Pulisci immediatamente i parametri per evitare loop
     st.query_params.clear()
 
 # Mostra cronologia
@@ -41,24 +43,27 @@ for msg in st.session_state.messages:
 # Input field
 user_input = st.text_input("Tu:", value=st.session_state.speech_input, key="user_input")
 
-# Microfono - versione semplificata senza key dinamiche
-components.html("""
+# Microfono - usa una key stabile
+components.html(f"""
 <div style="margin-top:10px;">
   <button id="mic" style="font-size:1.3em; padding:0.5em 1.5em; cursor:pointer;">🎤 Parla</button>
   <p id="status" style="font-size:1em; font-style:italic; color:#555;"></p>
 </div>
 <script>
-// Controlla se il listener è già stato aggiunto
-if (!document.getElementById("mic").hasAttribute("data-listener-added")) {
-    document.getElementById("mic").setAttribute("data-listener-added", "true");
+// Usa un ID univoco per evitare conflitti
+const componentId = "mic_component_{st.session_state.component_key}";
+
+// Evita duplicazione di event listeners usando l'ID del componente
+if (!window[componentId + "_initialized"]) {{
+    window[componentId + "_initialized"] = true;
     
-    document.getElementById("mic").onclick = function() {
+    document.getElementById("mic").onclick = function() {{
         const status = document.getElementById("status");
         
-        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {{
             status.innerText = "⚠️ Riconoscimento vocale non supportato";
             return;
-        }
+        }}
         
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'ca-ES';
@@ -68,28 +73,28 @@ if (!document.getElementById("mic").hasAttribute("data-listener-added")) {
         status.innerText = "🎙️ Escoltant...";
         recognition.start();
         
-        recognition.onresult = function(event) {
+        recognition.onresult = function(event) {{
             const transcript = event.results[0][0].transcript;
             status.innerText = "🔊 Trascritto: " + transcript;
             
             // Redirect con il testo trascritto
-            setTimeout(() => {
+            setTimeout(() => {{
                 const currentUrl = window.location.pathname;
                 window.location.href = currentUrl + "?speech=" + encodeURIComponent(transcript);
-            }, 1500);
-        };
+            }}, 1500);
+        }};
         
-        recognition.onerror = function(event) {
+        recognition.onerror = function(event) {{
             status.innerText = "⚠️ Errore: " + event.error;
-        };
+        }};
         
-        recognition.onend = function() {
-            if (!status.innerText.includes("Trascritto")) {
+        recognition.onend = function() {{
+            if (!status.innerText.includes("Trascritto")) {{
                 status.innerText = "⏹️ Nessun testo rilevato";
-            }
-        };
-    };
-}
+            }}
+        }};
+    }};
+}}
 </script>
 """, height=130)
 
