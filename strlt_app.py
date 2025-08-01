@@ -234,7 +234,7 @@ if "spoken_text" in params:
     text = urllib.parse.unquote(params["spoken_text"][0])
     st.session_state.spoken_text = text
     # forza reload senza parametri
-    st.experimental_set_query_params()
+    st.query_params()
     st.write("🪵 [DEBUG] Contingut de la barra:", st.session_state.spoken_text)
 
 # Invio - also use a unique key here
