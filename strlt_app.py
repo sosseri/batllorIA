@@ -8,7 +8,7 @@ import re
 import time
 import speech_recognition as sr
 import numpy as np
-import uuid  # Add the missing uuid import here
+import uuid
 
 
 def get_spoken_text():
@@ -163,8 +163,10 @@ if "conversation_id" not in st.session_state:
     st.session_state.conversation_id = None
 if "session_key" not in st.session_state:
     # Generate a unique session key to avoid duplicate element keys
-    import uuid
     st.session_state.session_key = str(uuid.uuid4())[:8]
+if "spoken_text" not in st.session_state:
+    st.session_state.spoken_text = ""
+
 
 # Display chat history
 for message in st.session_state.messages:
@@ -174,47 +176,54 @@ for message in st.session_state.messages:
 if "input_text" not in st.session_state:
     st.session_state.input_text = ""
 
-import streamlit.components.v1 as components
 
-# Barra di input
-user_input = st.text_input("Tu:", key="input_text")
+# Aggiorna la barra se arriva del testo da riconoscimento
+user_input = st.text_input("Tu:", key="input_text", value=st.session_state.spoken_text)
 
-# Microfono HTML (funziona anche su mobile e Streamlit Cloud)
+# Reset testo riconosciuto dopo averlo passato
+st.session_state.spoken_text = ""
+
 components.html("""
-<div style="margin-top:10px;">
-  <button id="mic" style="font-size:1.2em; background:none; border:none; cursor:pointer;">🎤 Parla</button>
-  <input id="speech_result" type="hidden" />
-</div>
-
 <script>
-  const mic = document.getElementById("mic");
-  const resultField = document.getElementById("speech_result");
+  const speakButton = document.createElement("button");
+  speakButton.innerText = "🎤 Parla";
+  speakButton.style.fontSize = "1.2em";
+  speakButton.style.marginTop = "10px";
+  speakButton.style.background = "none";
+  speakButton.style.border = "none";
+  speakButton.style.cursor = "pointer";
 
-  mic.onclick = () => {
+  document.body.appendChild(speakButton);
+
+  speakButton.onclick = () => {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'ca-ES';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
+
     recognition.start();
 
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      resultField.value = transcript;
-      window.parent.postMessage({ text: transcript }, "*");
+      // Invia il testo a Streamlit
+      const streamlitEvent = new CustomEvent("streamlit:spoken_text", {
+        detail: transcript
+      });
+      window.dispatchEvent(streamlitEvent);
     };
   };
 
-  window.addEventListener("message", (event) => {
-    const inputBox = window.parent.document.querySelector('input[data-testid="stTextInput"]');
-    if (event.data.text && inputBox) {
-      inputBox.value = event.data.text;
-      const inputEvent = new Event("input", { bubbles: true });
-      inputBox.dispatchEvent(inputEvent);
-    }
+  window.addEventListener("streamlit:spoken_text", (e) => {
+    const text = e.detail;
+    window.parent.postMessage({type: "streamlit:setComponentValue", value: text}, "*");
   });
 </script>
 """, height=70)
 
+# Recupera il testo parlato dal frontend (se presente)
+spoken = st.experimental_get_query_params().get("value", [""])[0]
+if spoken:
+    st.session_state.spoken_text = spoken
 
 # Invio - also use a unique key here
 send_button_key = f"send_button_{st.session_state.session_key}"
