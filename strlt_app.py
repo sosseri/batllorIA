@@ -26,13 +26,12 @@ for key, default in {
     if key not in st.session_state:
         st.session_state[key] = default
 
-# Gestione del testo vocale dai query parameters - SOLO UNA VOLTA
+# Gestione del testo vocale dai query parameters
 params = st.query_params
 speech_param = params.get("speech", "")
 if speech_param and speech_param != st.session_state.speech_input:
     decoded_speech = urllib.parse.unquote(speech_param)
     st.session_state.speech_input = decoded_speech
-    # Pulisci immediatamente i parametri per evitare loop
     st.query_params.clear()
 
 # Mostra cronologia
@@ -42,25 +41,24 @@ for msg in st.session_state.messages:
 # Input field
 user_input = st.text_input("Tu:", value=st.session_state.speech_input, key="user_input")
 
-# Microfono - usa un key univoco per evitare duplicazioni
-mic_key = f"mic_component_{hash(str(st.session_state.messages))}"
-components.html(f"""
+# Microfono - versione semplificata senza key dinamiche
+components.html("""
 <div style="margin-top:10px;">
   <button id="mic" style="font-size:1.3em; padding:0.5em 1.5em; cursor:pointer;">🎤 Parla</button>
   <p id="status" style="font-size:1em; font-style:italic; color:#555;"></p>
 </div>
 <script>
-// Evita duplicazione di event listeners
-if (!window.micListenerAdded) {{
-    window.micListenerAdded = true;
+// Controlla se il listener è già stato aggiunto
+if (!document.getElementById("mic").hasAttribute("data-listener-added")) {
+    document.getElementById("mic").setAttribute("data-listener-added", "true");
     
-    document.getElementById("mic").onclick = function() {{
+    document.getElementById("mic").onclick = function() {
         const status = document.getElementById("status");
         
-        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {{
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
             status.innerText = "⚠️ Riconoscimento vocale non supportato";
             return;
-        }}
+        }
         
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'ca-ES';
@@ -70,30 +68,30 @@ if (!window.micListenerAdded) {{
         status.innerText = "🎙️ Escoltant...";
         recognition.start();
         
-        recognition.onresult = function(event) {{
+        recognition.onresult = function(event) {
             const transcript = event.results[0][0].transcript;
             status.innerText = "🔊 Trascritto: " + transcript;
             
             // Redirect con il testo trascritto
-            setTimeout(() => {{
+            setTimeout(() => {
                 const currentUrl = window.location.pathname;
                 window.location.href = currentUrl + "?speech=" + encodeURIComponent(transcript);
-            }}, 1500);
-        }};
+            }, 1500);
+        };
         
-        recognition.onerror = function(event) {{
+        recognition.onerror = function(event) {
             status.innerText = "⚠️ Errore: " + event.error;
-        }};
+        };
         
-        recognition.onend = function() {{
-            if (!status.innerText.includes("Trascritto")) {{
+        recognition.onend = function() {
+            if (!status.innerText.includes("Trascritto")) {
                 status.innerText = "⏹️ Nessun testo rilevato";
-            }}
-        }};
-    }};
-}}
+            }
+        };
+    };
+}
 </script>
-""", height=130, key=mic_key)
+""", height=130)
 
 # Funzioni audio
 def generate_audio_base64(text):
