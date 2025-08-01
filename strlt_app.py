@@ -177,20 +177,20 @@ if "input_text" not in st.session_state:
     st.session_state.input_text = ""
 
 
-# Mostra la barra, precompilata se c'è testo trascritto
-user_input = st.text_input("Tu:", key="input_text", value=st.session_state.spoken_text)
 
 # Pulisce spoken_text dopo l’uso
 st.session_state.spoken_text = ""
+user_input = st.text_input("Tu:", key="input_text")
 
+# Microfono HTML
 components.html("""
 <script>
-  const existing = document.getElementById("mic");
-  if (!existing) {
+  // Aggiungi il bottone mic se non esiste ancora
+  if (!document.getElementById("micBtn")) {
     const mic = document.createElement("button");
-    mic.id = "mic";
+    mic.id = "micBtn";
     mic.innerText = "🎤 Parla";
-    mic.style.fontSize = "1.2em";
+    mic.style.fontSize = "1.3em";
     mic.style.marginTop = "10px";
     mic.style.background = "none";
     mic.style.border = "none";
@@ -201,31 +201,36 @@ components.html("""
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
       recognition.lang = 'ca-ES';
       recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      mic.innerText = "🎙️ Escoltant..."; 
       recognition.start();
 
-      recognition.onstart = () => {
-        mic.innerText = "🎙️ Escoltant...";
-      };
-
       recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        // invia il transcript a Streamlit come parametro URL
-        const url = new URL(window.location.href);
-        url.searchParams.set("spoken_text", transcript);
-        window.location.href = url.toString();
-      };
-
-      recognition.onerror = () => {
-        mic.innerText = "🎤 Error";
-      };
-
-      recognition.onend = () => {
+        const text = event.results[0][0].transcript;
+        window.parent.postMessage({speech_text: text}, "*");
         mic.innerText = "🎤 Parla";
+      };
+      recognition.onerror = () => mic.innerText = "🎤 Error";
+      recognition.onend = () => {
+        if (mic.innerText !== "🎤 Error") mic.innerText = "🎤 Parla";
       };
     };
   }
+
+  // Invia il testo riconosciuto alla app Python
+  window.addEventListener("message", (event) => {
+    if (event.data.speech_text) {
+      // Trova la barra di input e la aggiorna
+      const input = window.parent.document.querySelector('input[data-testid="stTextInput"]');
+      if (input) {
+        input.value = event.data.speech_text;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    }
+  });
 </script>
-""", height=0)
+""", height=70)
 
 import urllib.parse
 
