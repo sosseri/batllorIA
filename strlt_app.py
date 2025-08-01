@@ -21,72 +21,79 @@ st.subheader("L'Intelligència Artificial de la família Batllori")
 for key, default in {
     "messages": [],
     "conversation_id": None,
-    "last_speech": "",
+    "speech_input": "",
 }.items():
     if key not in st.session_state:
         st.session_state[key] = default
 
-# Gestione del testo vocale dai query parameters
+# Gestione del testo vocale dai query parameters - SOLO UNA VOLTA
 params = st.query_params
-speech_text = params.get("speech", "")
-if speech_text:
-    decoded_speech = urllib.parse.unquote(speech_text)
-    st.session_state.last_speech = decoded_speech
+speech_param = params.get("speech", "")
+if speech_param and speech_param != st.session_state.speech_input:
+    decoded_speech = urllib.parse.unquote(speech_param)
+    st.session_state.speech_input = decoded_speech
+    # Pulisci immediatamente i parametri per evitare loop
     st.query_params.clear()
-    st.rerun()
 
 # Mostra cronologia
 for msg in st.session_state.messages:
     st.markdown(f"**{msg['role']}:** {msg['content']}")
 
 # Input field
-user_input = st.text_input("Tu:", value=st.session_state.last_speech, key="user_input")
+user_input = st.text_input("Tu:", value=st.session_state.speech_input, key="user_input")
 
-# Microfono con redirect semplice
+# Microfono - usa un key univoco per evitare duplicazioni
+mic_key = f"mic_component_{hash(str(st.session_state.messages))}"
 components.html(f"""
 <div style="margin-top:10px;">
   <button id="mic" style="font-size:1.3em; padding:0.5em 1.5em; cursor:pointer;">🎤 Parla</button>
   <p id="status" style="font-size:1em; font-style:italic; color:#555;"></p>
 </div>
 <script>
-document.getElementById("mic").onclick = function() {{
-    const status = document.getElementById("status");
+// Evita duplicazione di event listeners
+if (!window.micListenerAdded) {{
+    window.micListenerAdded = true;
     
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {{
-        status.innerText = "⚠️ Riconoscimento vocale non supportato";
-        return;
-    }}
-    
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'ca-ES';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-    
-    status.innerText = "🎙️ Escoltant...";
-    recognition.start();
-    
-    recognition.onresult = function(event) {{
-        const transcript = event.results[0][0].transcript;
-        status.innerText = "🔊 Trascritto: " + transcript;
+    document.getElementById("mic").onclick = function() {{
+        const status = document.getElementById("status");
         
-        // Redirect con il testo trascritto
-        setTimeout(() => {{
-            window.location.href = window.location.pathname + "?speech=" + encodeURIComponent(transcript);
-        }}, 1000);
-    }};
-    
-    recognition.onerror = function(event) {{
-        status.innerText = "⚠️ Errore: " + event.error;
-    }};
-    
-    recognition.onend = function() {{
-        if (!status.innerText.includes("Trascritto")) {{
-            status.innerText = "⏹️ Nessun testo rilevato";
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {{
+            status.innerText = "⚠️ Riconoscimento vocale non supportato";
+            return;
         }}
+        
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'ca-ES';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        
+        status.innerText = "🎙️ Escoltant...";
+        recognition.start();
+        
+        recognition.onresult = function(event) {{
+            const transcript = event.results[0][0].transcript;
+            status.innerText = "🔊 Trascritto: " + transcript;
+            
+            // Redirect con il testo trascritto
+            setTimeout(() => {{
+                const currentUrl = window.location.pathname;
+                window.location.href = currentUrl + "?speech=" + encodeURIComponent(transcript);
+            }}, 1500);
+        }};
+        
+        recognition.onerror = function(event) {{
+            status.innerText = "⚠️ Errore: " + event.error;
+        }};
+        
+        recognition.onend = function() {{
+            if (!status.innerText.includes("Trascritto")) {{
+                status.innerText = "⏹️ Nessun testo rilevato";
+            }}
+        }};
     }};
-}};
+}}
 </script>
-""", height=130)
+""", height=130, key=mic_key)
 
 # Funzioni audio
 def generate_audio_base64(text):
@@ -128,8 +135,8 @@ if st.button("Envia") and user_input.strip():
     st.markdown("**Batllori:** " + bot_response)
     play_audio_sequence(bot_response)
 
-    # Reset
-    st.session_state.last_speech = ""
+    # Reset del testo vocale
+    st.session_state.speech_input = ""
     st.rerun()
 
 # Reset chat
@@ -140,5 +147,5 @@ if st.button("Reiniciar conversa"):
         pass
     st.session_state.messages = []
     st.session_state.conversation_id = None
-    st.session_state.last_speech = ""
+    st.session_state.speech_input = ""
     st.rerun()
