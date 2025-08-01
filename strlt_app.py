@@ -221,7 +221,7 @@ components.html("""
 """, height=70)
 
 # Recupera il testo parlato dal frontend (se presente)
-spoken = st.experimental_get_query_params().get("value", [""])[0]
+spoken = st.query_params().get("value", [""])[0]
 if spoken:
     st.session_state.spoken_text = spoken
 
