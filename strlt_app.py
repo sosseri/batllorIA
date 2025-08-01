@@ -44,36 +44,51 @@ default_input = spoken if spoken else ""
 input_key = f"input_text_{st.session_state.session_key}"
 user_input = st.text_input("Tu:", key=input_key, value=default_input)
 
-# Microfono: bottone visibile che modifica l’URL
+# Microfono + trascrizione via Web Speech API + debug
 components.html("""
-<div style="margin:10px 0;">
-  <button id="mic" style="font-size:1.2em; padding:0.4em 1em; cursor:pointer;">🎤 Parla</button>
+<div style="margin-top:10px;">
+  <button id="mic" style="font-size:1.3em; padding:0.5em 1.5em; cursor:pointer;">🎤 Parla</button>
+  <p id="debug_text" style="font-size:1em; font-style:italic; color:#555;"></p>
 </div>
 <script>
-const mic = document.getElementById("mic");
-mic.onclick = () => {
-  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-  recognition.lang = 'ca-ES';
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-  recognition.start();
+  const mic = document.getElementById("mic");
+  const debug = document.getElementById("debug_text");
 
-  recognition.onstart = () => {
-    mic.innerText = "🎙️ Escoltant...";
+  mic.onclick = () => {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'ca-ES';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.start();
+    debug.innerText = "🎙️ Escoltant...";
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      debug.innerText = "🔊 Has dit: " + transcript;
+
+      // Inserisce la trascrizione nella vera barra input di Streamlit
+      const inputBox = window.parent.document.querySelector('input[data-testid="stTextInput"]');
+      if (inputBox) {
+        inputBox.value = transcript;
+        const inputEvent = new Event("input", { bubbles: true });
+        inputBox.dispatchEvent(inputEvent);
+      }
+    };
+
+    recognition.onerror = () => {
+      debug.innerText = "⚠️ Error durant el reconeixement de veu.";
+    };
+
+    recognition.onend = () => {
+      if (!debug.innerText.startsWith("🔊")) {
+        debug.innerText = "⏹️ No s'ha detectat veu.";
+      }
+    };
   };
-  recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript;
-    const url = new URL(window.location.href);
-    url.searchParams.set("spoken_text", transcript);
-    window.location.href = url.toString();
-  };
-  recognition.onerror = () => { mic.innerText = "🎤 Error"; };
-  recognition.onend = () => {
-    if (mic.innerText !== "🎤 Error") mic.innerText = "🎤 Parla";
-  };
-};
 </script>
-""", height=70)
+""", height=120)
+
 
 # Funzioni audio
 def generate_audio_base64(text):
