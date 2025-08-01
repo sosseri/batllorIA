@@ -177,55 +177,65 @@ if "input_text" not in st.session_state:
     st.session_state.input_text = ""
 
 
-# Campo di input visibile
-user_input = st.text_input("Tu:", key="input_text")
+# Mostra la barra, precompilata se c'è testo trascritto
+user_input = st.text_input("Tu:", key="input_text", value=st.session_state.spoken_text)
 
-# Microfono: HTML + Web Speech API via postMessage
+# Pulisce spoken_text dopo l’uso
+st.session_state.spoken_text = ""
+
 components.html("""
-<button id="mic" style="font-size: 1.3em; margin-top: 10px; background: none; border: none; cursor: pointer;">🎤 Parla</button>
 <script>
-  const mic = document.getElementById("mic");
+  const existing = document.getElementById("mic");
+  if (!existing) {
+    const mic = document.createElement("button");
+    mic.id = "mic";
+    mic.innerText = "🎤 Parla";
+    mic.style.fontSize = "1.2em";
+    mic.style.marginTop = "10px";
+    mic.style.background = "none";
+    mic.style.border = "none";
+    mic.style.cursor = "pointer";
+    document.body.appendChild(mic);
 
-  mic.onclick = () => {
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'ca-ES';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+    mic.onclick = () => {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'ca-ES';
+      recognition.interimResults = false;
+      recognition.start();
 
-    recognition.start();
+      recognition.onstart = () => {
+        mic.innerText = "🎙️ Escoltant...";
+      };
 
-    recognition.onstart = () => {
-      mic.innerText = "🎙️ Escoltant...";
-    };
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        // invia il transcript a Streamlit come parametro URL
+        const url = new URL(window.location.href);
+        url.searchParams.set("spoken_text", transcript);
+        window.location.href = url.toString();
+      };
 
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      window.parent.postMessage({ text: transcript }, "*");
-      mic.innerText = "🎤 Parla";
-    };
+      recognition.onerror = () => {
+        mic.innerText = "🎤 Error";
+      };
 
-    recognition.onerror = (e) => {
-      mic.innerText = "🎤 Error";
-    };
-
-    recognition.onend = () => {
-      if (mic.innerText !== "🎤 Error") {
+      recognition.onend = () => {
         mic.innerText = "🎤 Parla";
-      }
+      };
     };
-  };
-
-  window.addEventListener("message", (event) => {
-    const inputBox = window.parent.document.querySelector('input[data-testid="stTextInput"]');
-    if (event.data.text && inputBox) {
-      inputBox.value = event.data.text;
-      inputBox.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-  });
+  }
 </script>
-""", height=70)
+""", height=0)
 
-st.write("🪵 [DEBUG] Contingut de la barra:", st.session_state.input_text)
+import urllib.parse
+
+params = st.query_params()
+if "spoken_text" in params:
+    text = urllib.parse.unquote(params["spoken_text"][0])
+    st.session_state.spoken_text = text
+    # forza reload senza parametri
+    st.experimental_set_query_params()
+    st.write("🪵 [DEBUG] Contingut de la barra:", st.session_state.spoken_text)
 
 # Invio - also use a unique key here
 send_button_key = f"send_button_{st.session_state.session_key}"
