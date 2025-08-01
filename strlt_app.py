@@ -221,9 +221,12 @@ components.html("""
 """, height=70)
 
 # Recupera il testo parlato dal frontend (se presente)
-spoken = st.query_params().get("value", [""])[0]
+spoken = st.query_params.get("value", [""])[0]
 if spoken:
     st.session_state.spoken_text = spoken
+    st.write("🪵 [DEBUG] Text from speech-to-text:", spoken)
+    
+
 
 # Invio - also use a unique key here
 send_button_key = f"send_button_{st.session_state.session_key}"
