@@ -15,7 +15,7 @@ from groq import Groq
 # Config
 st.set_page_config(page_title="Xat amb Batllori", page_icon="💬")
 GROQ_API_KEY = st.secrets.get("GROQ_API_KEY")
-if not api_key:
+if not GROQ_API_KEY:
     st.error("🤖 Errore: manca GROQ_API_KEY nei Segreti!")
 
 # Titolo
