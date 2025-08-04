@@ -114,20 +114,24 @@ def play_audio_sequence(sentences):
         components.html(audio_html, height=0)
         time.sleep(min(5, len(s.split()) * 0.5))
 
-def read_aloud_groq(text: str, voice_id: str = "Fritz-PlayAI") -> BytesIO:
+def read_aloud_groq(text: str, voice_id: str = "Celeste-PlayAI") -> BytesIO:
     """
-    Call Groq TTS API with given text and voice_id, returning a BytesIO
-    containing WAV audio ready for playback.
+    Use Groq TTS service to synthesize `text` in the specified `voice_id`.
+    Returns a BytesIO with WAV audio.
     """
-    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-    
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise ValueError("GROQ_API_KEY not set in environment variables.")
+    client = Groq(api_key=api_key)
+
+    # Using the English playai-tts model; voices like 'Celeste-PlayAI' are supported :contentReference[oaicite:5]{index=5}
     response = client.audio.speech.create(
         model="playai-tts",
         voice=voice_id,
         input=text,
         response_format="wav",
     )
-    
+
     buf = BytesIO()
     response.write_to_file(buf)
     buf.seek(0)
