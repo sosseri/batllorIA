@@ -84,7 +84,7 @@ A més de les rutes guiades per la història de Sants i de la festa major, visit
 
 Dimecres 27 – Dia jove
 11:00
-🟡 10a edició de la Batalla Ninja
+ 10a edició de la Batalla Ninja
 Els ninjes Porpra i Ocre s’enfrontaran en una batalla organitzada amb les comissions del carrer de Guadiana i del carrer de Valladolid, als jardins de Can Mantega.
 ➡️ Activitat gratuïta amb aforament limitat. Cal inscripció prèvia:
 https://usem.liberaforms.org/10batallaninja25
@@ -169,4 +169,29 @@ def generate_response(messages):
     )
     return chat_completion.choices[0].message.content
 
+def get_system_prompt_from_question(user_input):
+    chat_completion = client.chat.completions.create(
+        messages=messages=        [
+        {
+            "role": """understand the context of the question and answer one of these three options (no additional text):
+            - 'Program' if it is related to the party program or with what to do today or the next days,
+            - 'Carrers' if it is related with the decoration of the other streets or with which other streets participate to the party,
+            - 'Standard' if it is related with the theme of Carrer Papin or the story of the familia Batllori or with ceramics, or similar.
+            In the doubt output 'Standard'."""
+            "user_question": user_input,
+        }
+    ],
+        model="llama-3.1-8b-instant",
+    )
+    answer = chat_completion.choices[0].message.content
+    if answer.replace("'", "").lower().startswith('program'):
+        return SYSTEM_PROMPT_PROGRAMA
+    if answer.replace("'", "").lower().startswith('carrers'):
+        return SYSTEM_PROMPT_CARRERS
+    if answer.replace("'", "").lower().startswith('standard'):
+        return SYSTEM_PROMPT
+    else:
+        print('none of the prompts')
+        return SYSTEM_PROMPT
+    
 
