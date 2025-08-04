@@ -204,6 +204,8 @@ if st.button("Envia") and user_input.strip():
     # groq text to speech
     audio_buf = read_aloud_groq(bot_response, voice_id="Celeste-PlayAI")
     play_audio_button(audio_buf)
+    st.write(f"🎧 Audio ricevuto: {len(audio_buf.getbuffer())} bytes")
+
     ##free service robotic voice
     #play_audio_sequence([bot_response])
 
