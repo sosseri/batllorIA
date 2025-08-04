@@ -1,6 +1,6 @@
 # app/main.py
 from fastapi import FastAPI, Request
-from app.core import generate_response, get_system_prompt
+from app.core import generate_response, get_system_prompt, get_system_prompt_from_question
 from typing import Dict, List, Optional
 import uuid
 
@@ -36,7 +36,7 @@ async def chat_endpoint(req: Request):
         
         # Prepare messages for the API with system prompt
         messages = [
-            {"role": "system", "content": get_system_prompt()}
+            {"role": "system", "content": get_system_prompt_from_question(user_input)}
         ] + conversation_history
         
         # Generate response
