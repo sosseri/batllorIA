@@ -9,9 +9,10 @@ import time
 import numpy as np
 import uuid
 import urllib.parse
+from groq import Groq
 
 # Config
-st.set_page_config(page_title="Xat amb Batllori", page_icon="🧠")
+st.set_page_config(page_title="Xat amb Batllori", page_icon="💬")
 
 # Titolo
 st.header("💬 Xat amb BatllorIA")
