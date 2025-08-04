@@ -201,13 +201,13 @@ if st.button("Envia") and user_input.strip():
     st.session_state.messages.append({"role": "BatllorIA", "content": bot_response})
     st.markdown("**Tu:** " + user_msg)
     st.markdown("**Batllori:** " + bot_response)
-    # groq text to speech
-    audio_buf = read_aloud_groq(bot_response, voice_id="Celeste-PlayAI")
-    play_audio_button(audio_buf)
-    st.write(f"🎧 Audio ricevuto: {len(audio_buf.getbuffer())} bytes")
+    ## groq text to speech
+    #audio_buf = read_aloud_groq(bot_response, voice_id="Celeste-PlayAI")
+    #play_audio_button(audio_buf)
+    #st.write(f"🎧 Audio ricevuto: {len(audio_buf.getbuffer())} bytes")
 
-    ##free service robotic voice
-    #play_audio_sequence([bot_response])
+    #free service robotic voice
+    play_audio_sequence([bot_response])
 
     # Reset del testo vocale e session_key
     st.session_state.speech_text = ""
