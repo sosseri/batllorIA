@@ -160,12 +160,10 @@ if st.button("Envia") and user_input.strip():
     st.markdown("**Tu:** " + user_msg)
     st.markdown("**Batllori:** " + bot_response)
     # groq text to speech
-    try:
-        audio_bytes = read_aloud_groq(bot_response, voice_id="Celeste-PlayAI", api_key = GROQ_API_KEY)
-        st.audio(audio_bytes, format="audio/wav")
-    except:
-        #free service robotic voice
-        play_audio_sequence([bot_response])
+    audio_bytes = read_aloud_groq(bot_response, voice_id="Celeste-PlayAI", api_key = GROQ_API_KEY)
+    st.audio(audio_bytes, format="audio/wav")
+    ##free service robotic voice
+    #play_audio_sequence([bot_response])
 
     # Reset del testo vocale e session_key
     st.session_state.speech_text = ""
