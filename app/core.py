@@ -169,29 +169,63 @@ def generate_response(messages):
     )
     return chat_completion.choices[0].message.content
 
-def get_system_prompt_from_question(user_input):
-    chat_completion = client.chat.completions.create(
-        messages=messages=        [
+def get_system_prompt_from_question(user_input: str, client) -> str:
+    """
+    Classifica l'input dell'utente in catalano e restituisce il prompt di sistema appropriato.
+
+    Args:
+        user_input: La domanda dell'utente in catalano.
+        client: L'istanza del client API (es. OpenAI).
+
+    Returns:
+        Il prompt di sistema scelto.
+    """
+    # 1. Il messaggio di sistema per il classificatore deve essere chiaro e separato dal ruolo.
+    #    Il ruolo deve essere 'system' o 'user', non una descrizione.
+    messages = [
         {
-            "role": """understand the context of the question and answer one of these three options (no additional text):
-            - 'Program' if it is related to the party program or with what to do today or the next days,
-            - 'Carrers' if it is related with the decoration of the other streets or with which other streets participate to the party,
-            - 'Standard' if it is related with the theme of Carrer Papin or the story of the familia Batllori or with ceramics, or similar.
-            In the doubt output 'Standard'."""
-            "user_question": user_input,
+            "role": "system",
+            "content": """Ets un assistent expert a classificar preguntes en català.
+Analitza la pregunta de l'usuari i respon només amb una de les tres opcions següents, sense text addicional:
+- 'Programa': si la pregunta està relacionada amb el programa de la festa, activitats d'avui o dels pròxims dies.
+- 'Carrers': si la pregunta està relacionada amb la decoració d'altres carrers o quins carrers participen a la festa.
+- 'Estàndard': si la pregunta tracta sobre el tema del Carrer Papin, la història de la família Batllori, la ceràmica o qualsevol altre tema. En cas de dubte, tria 'Estàndard'."""
+        },
+        {
+            "role": "user",
+            "content": user_input
         }
-    ],
-        model="llama-3.1-8b-instant",
-    )
-    answer = chat_completion.choices[0].message.content
-    if answer.replace("'", "").lower().startswith('program'):
-        return SYSTEM_PROMPT_PROGRAMA
-    if answer.replace("'", "").lower().startswith('carrers'):
-        return SYSTEM_PROMPT_CARRERS
-    if answer.replace("'", "").lower().startswith('standard'):
+    ]
+
+    try:
+        # 2. La chiamata all'API era mal formattata.
+        chat_completion = client.chat.completions.create(
+            model="llama-3.1-8b-instant",  # Assicurati che il modello sia corretto e disponibile
+            messages=messages,
+            temperature=0.0 # Usiamo una temperatura bassa per avere risposte più prevedibili
+        )
+        
+        # 3. Estrai il contenuto del messaggio in modo sicuro.
+        answer = chat_completion.choices[0].message.content
+
+        # 4. Semplifica e rendi più robusta la logica di selezione.
+        #    Usiamo .strip() per rimuovere spazi e .lower() per ignorare maiuscole/minuscole.
+        cleaned_answer = answer.strip().replace("'", "").lower()
+
+        if cleaned_answer == 'programa':
+            print("-> Classificato come: Programa")
+            return SYSTEM_PROMPT_PROGRAMA
+        elif cleaned_answer == 'carrers':
+            print("-> Classificato come: Carrers")
+            return SYSTEM_PROMPT_CARRERS
+        else: # Include 'estàndard' e qualsiasi altra risposta inaspettata
+            print(f"-> Classificato come: Estàndard (Risposta ricevuta: '{answer}')")
+            return SYSTEM_PROMPT
+
+    except Exception as e:
+        # 5. Gestisci possibili errori durante la chiamata API.
+        print(f"S'ha produït un error durant la trucada a l'API: {e}")
+        # In caso di errore, restituisci il prompt di default per sicurezza.
         return SYSTEM_PROMPT
-    else:
-        print('none of the prompts')
-        return SYSTEM_PROMPT
-    
+
 
