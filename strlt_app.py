@@ -11,6 +11,7 @@ import uuid
 import urllib.parse
 import os
 from groq import Groq
+import tempfile
 
 # Config
 st.set_page_config(page_title="Xat amb Batllori", page_icon="💬")
@@ -117,28 +118,44 @@ def play_audio_sequence(sentences):
         components.html(audio_html, height=0)
         time.sleep(min(5, len(s.split()) * 0.5))
 
-def read_aloud_groq(text: str, api_key: str, voice_id: str = "Celeste-PlayAI") -> BytesIO:
+
+
+def read_aloud_groq(text: str, voice_id: str = "Celeste-PlayAI") -> BytesIO:
     """
-    Use Groq TTS service to synthesize `text` in the specified `voice_id`.
-    Returns a BytesIO with WAV audio.
+    Text-to-speech usando Groq: crea un WAV temporaneo, lo legge in memoria e torna un BytesIO.
     """
-    api_key = GROQ_API_KEY
+    api_key = st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
     if not api_key:
-        raise ValueError("GROQ_API_KEY not set in environment variables.")
+        raise ValueError("❌ Manca la chiave GROQ_API_KEY nei Segreti o vars!")
+
     client = Groq(api_key=api_key)
 
-    # Using the English playai-tts model; voices like 'Celeste-PlayAI' are supported :contentReference[oaicite:5]{index=5}
+    # Synthesize speech via Groq
     response = client.audio.speech.create(
         model="playai-tts",
         voice=voice_id,
         input=text,
-        response_format="wav",
+        response_format="wav"
     )
+    # Scrive su file temporaneo
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+        tmp_path = tmp.name
+    response.write_to_file(tmp_path)  # richiede path su disco :contentReference[oaicite:2]{index=2}
 
+    # Carica in BytesIO
     buf = BytesIO()
-    response.write_to_file(buf)
+    with open(tmp_path, "rb") as f:
+        buf.write(f.read())
     buf.seek(0)
+
+    # Rimuovi file temporaneo
+    try:
+        os.remove(tmp_path)
+    except OSError:
+        pass
+
     return buf
+
 
 # Invia messaggio
 if st.button("Envia") and user_input.strip():
@@ -160,8 +177,8 @@ if st.button("Envia") and user_input.strip():
     st.markdown("**Tu:** " + user_msg)
     st.markdown("**Batllori:** " + bot_response)
     # groq text to speech
-    audio_bytes = read_aloud_groq(bot_response, voice_id="Celeste-PlayAI", api_key = GROQ_API_KEY)
-    st.audio(audio_bytes, format="audio/wav")
+    audio_buf = read_aloud_groq(bot_response, voice_id="Celeste-PlayAI")
+    st.audio(audio_buf, format="audio/wav")
     ##free service robotic voice
     #play_audio_sequence([bot_response])
 
