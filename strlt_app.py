@@ -116,7 +116,7 @@ def play_audio_sequence(sentences):
         components.html(audio_html, height=0)
         time.sleep(min(5, len(s.split()) * 0.5))
 
-def read_aloud_groq(text: str, api_key = GROQ_API_KEY, voice_id: str = "Celeste-PlayAI") -> BytesIO:
+def read_aloud_groq(text: str, api_key: str, voice_id: str = "Celeste-PlayAI") -> BytesIO:
     """
     Use Groq TTS service to synthesize `text` in the specified `voice_id`.
     Returns a BytesIO with WAV audio.
@@ -164,7 +164,7 @@ if st.button("Envia") and user_input.strip():
         st.audio(audio_bytes, format="audio/wav")
     except:
         #free service robotic voice
-        play_audio_sequence(bot_response)
+        play_audio_sequence([bot_response])
 
     # Reset del testo vocale e session_key
     st.session_state.speech_text = ""
