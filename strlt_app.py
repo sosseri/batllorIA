@@ -14,6 +14,8 @@ from groq import Groq
 
 # Config
 st.set_page_config(page_title="Xat amb Batllori", page_icon="💬")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
 
 # Titolo
 st.header("💬 Xat amb BatllorIA")
@@ -114,12 +116,12 @@ def play_audio_sequence(sentences):
         components.html(audio_html, height=0)
         time.sleep(min(5, len(s.split()) * 0.5))
 
-def read_aloud_groq(text: str, voice_id: str = "Celeste-PlayAI") -> BytesIO:
+def read_aloud_groq(text: str, api_key = GROQ_API_KEY, voice_id: str = "Celeste-PlayAI") -> BytesIO:
     """
     Use Groq TTS service to synthesize `text` in the specified `voice_id`.
     Returns a BytesIO with WAV audio.
     """
-    api_key = os.getenv("GROQ_API_KEY")
+    api_key = GROQ_API_KEY
     if not api_key:
         raise ValueError("GROQ_API_KEY not set in environment variables.")
     client = Groq(api_key=api_key)
