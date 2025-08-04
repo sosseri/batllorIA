@@ -112,6 +112,25 @@ def play_audio_sequence(sentences):
         components.html(audio_html, height=0)
         time.sleep(min(5, len(s.split()) * 0.5))
 
+def read_aloud_groq(text: str, voice_id: str = "Fritz-PlayAI") -> BytesIO:
+    """
+    Call Groq TTS API with given text and voice_id, returning a BytesIO
+    containing WAV audio ready for playback.
+    """
+    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+    
+    response = client.audio.speech.create(
+        model="playai-tts",
+        voice=voice_id,
+        input=text,
+        response_format="wav",
+    )
+    
+    buf = BytesIO()
+    response.write_to_file(buf)
+    buf.seek(0)
+    return buf
+
 # Invia messaggio
 if st.button("Envia") and user_input.strip():
     user_msg = user_input.strip()
@@ -131,7 +150,11 @@ if st.button("Envia") and user_input.strip():
     st.session_state.messages.append({"role": "BatllorIA", "content": bot_response})
     st.markdown("**Tu:** " + user_msg)
     st.markdown("**Batllori:** " + bot_response)
-    play_audio_sequence(bot_response)
+    # groq text to speech
+    audio_bytes = read_aloud_groq(bot_response, voice_id="Celeste-PlayAI")
+    st.audio(audio_bytes, format="audio/wav")
+    ## free service robotic voice
+    # play_audio_sequence(bot_response)
 
     # Reset del testo vocale e session_key
     st.session_state.speech_text = ""
