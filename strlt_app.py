@@ -156,18 +156,15 @@ def read_aloud_groq(text: str, voice_id: str = "Celeste-PlayAI") -> BytesIO:
 
     return buf
 
-def play_groq_audio_invisible(audio_buf: BytesIO):
+def play_audio_button(audio_buf: BytesIO, label="▶️ Escolta"):
+    import base64
+    audio_base64 = base64.b64encode(audio_buf.read()).decode("utf-8")
+    audio_html = f"""
+    <audio id="audioPlayer" src="data:audio/wav;base64,{audio_base64}"></audio>
+    <button onclick="document.getElementById('audioPlayer').play()" style="margin:10px;font-size:1.1em;">{label}</button>
     """
-    Converte un BytesIO WAV in base64 e lo riproduce invisibilmente in autoplay.
-    """
-    audio_bytes = audio_buf.read()
-    b64_audio = base64.b64encode(audio_bytes).decode("utf-8")
-    html = f"""
-    <audio autoplay>
-        <source src="data:audio/wav;base64,{b64_audio}" type="audio/wav">
-    </audio>
-    """
-    components.html(html, height=0)
+    components.html(audio_html, height=70)
+
 
 
 # Invia messaggio
@@ -191,7 +188,7 @@ if st.button("Envia") and user_input.strip():
     st.markdown("**Batllori:** " + bot_response)
     # groq text to speech
     audio_buf = read_aloud_groq(bot_response, voice_id="Celeste-PlayAI")
-    play_groq_audio_invisible(audio_buf)
+    play_audio_button(audio_buf)
     ##free service robotic voice
     #play_audio_sequence([bot_response])
 
