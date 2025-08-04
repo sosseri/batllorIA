@@ -156,14 +156,29 @@ def read_aloud_groq(text: str, voice_id: str = "Celeste-PlayAI") -> BytesIO:
 
     return buf
 
-def play_audio_button(audio_buf: BytesIO, label="▶️ Escolta"):
-    import base64
-    audio_base64 = base64.b64encode(audio_buf.read()).decode("utf-8")
-    audio_html = f"""
-    <audio id="audioPlayer" src="data:audio/wav;base64,{audio_base64}"></audio>
-    <button onclick="document.getElementById('audioPlayer').play()" style="margin:10px;font-size:1.1em;">{label}</button>
+import streamlit.components.v1 as components
+import base64
+
+def play_audio_button(audio_buf, label="▶️ Escolta"):
     """
-    components.html(audio_html, height=70)
+    Mostra un bottone che, al click, riproduce un audio WAV.
+    Funziona anche su mobile + Streamlit Cloud.
+    """
+    audio_base64 = base64.b64encode(audio_buf.read()).decode("utf-8")
+    html_code = f"""
+    <audio id="batllori_audio" src="data:audio/wav;base64,{audio_base64}"></audio>
+    <button onclick="document.getElementById('batllori_audio').play()" style="
+        font-size: 1.2em;
+        margin-top: 1em;
+        padding: 0.4em 1.2em;
+        background-color: #efefef;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        cursor: pointer;
+    ">{label}</button>
+    """
+    components.html(html_code, height=80)
+
 
 
 
