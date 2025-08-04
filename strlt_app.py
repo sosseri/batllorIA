@@ -9,6 +9,7 @@ import time
 import numpy as np
 import uuid
 import urllib.parse
+import os
 from groq import Groq
 
 # Config
