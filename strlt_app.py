@@ -100,12 +100,12 @@ else:
     st.success(f"🎤 Testo trascritto: '{st.session_state.speech_text}' - Modifica se necessario e premi Envia")
 
 # Funzioni audio
-def generate_audio_base64(text):
+def generate_audio_base64_drop(text):
     tts = gTTS(text=text, lang='ca')
     buf = BytesIO(); tts.write_to_fp(buf); buf.seek(0)
     return base64.b64encode(buf.read()).decode()
 
-def play_audio_sequence(sentences):
+def play_audio_sequence_drop(sentences):
     if isinstance(sentences, str):
         sentences = re.split(r'(?<=[.!?])\s+', sentences.strip())
     for s in sentences:
@@ -118,6 +118,38 @@ def play_audio_sequence(sentences):
         components.html(audio_html, height=0)
         time.sleep(min(5, len(s.split()) * 0.5))
 
+def generate_audio_base64(text):
+    tts = gTTS(text=text, lang='ca')
+    audio_fp = BytesIO()
+    tts.write_to_fp(audio_fp)
+    audio_fp.seek(0)
+    return base64.b64encode(audio_fp.read()).decode()
+
+def play_audio_sequence(sentences):
+    if type(sentences) == list:
+        for sentence in sentences:
+            audio_b64 = generate_audio_base64(sentence)
+            audio_html = f"""
+            <audio autoplay>
+                <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3">
+            </audio>
+            """
+            components.html(audio_html, height=0)
+            # Adjust pause duration: shorter for short sentences, minimal base pause
+            pause_duration = len(sentence.split()) * (0.5/(np.mean([len(x) for x in sentence.split()]))*5)
+            time.sleep(pause_duration)
+    else:
+        sentence = sentences
+        audio_b64 = generate_audio_base64(sentence)
+            audio_html = f"""
+            <audio autoplay>
+                <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3">
+            </audio>
+            """
+        components.html(audio_html, height=0)
+        
+    # Clear the input field after audio finishes playing
+    st.session_state.temp_speech_input = ""
 
 
 def read_aloud_groq(text: str, voice_id: str = "Celeste-PlayAI") -> BytesIO:
