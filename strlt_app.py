@@ -19,6 +19,7 @@ GROQ_API_KEY = st.secrets.get("GROQ_API_KEY")
 if not GROQ_API_KEY:
     st.error("🤖 Errore: manca GROQ_API_KEY nei Segreti!")
 # conecta amb groq imediatament per disminuir l'espera
+client = groq.Client(api_key= GROQ_API_KEY)
 chat_completion = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages= [        {"role": "system","content": """Write 'Hola'"""},        {"role": "user",  "content": " "}    ],
