@@ -14,43 +14,59 @@ import groq
 from groq import Groq
 import tempfile
 
-# Config
+# Configurazione della pagina (da fare come prima cosa)
 st.set_page_config(page_title="Xat amb Batllori", page_icon="💬")
-GROQ_API_KEY = st.secrets.get("GROQ_API_KEY")
-if not GROQ_API_KEY:
-    st.error("🤖 Errore: manca GROQ_API_KEY nei Segreti!")
-# conecta amb groq imediatament per disminuir l'espera
-client = groq.Client(api_key=GROQ_API_KEY)
-try:
-    st.write("Connectant amb la IA... pot trigar fins a 30 segons")
 
-    chat_completion = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[
-            {"role": "system", "content": "Sei un assistente AI. Rispondi 'Hola'."},
-            {"role": "user", "content": "Hola"}
-        ],
-        temperature=0.1,
-        max_tokens=1 
-    )
-    st.write("Connexió amb la IA establerta")
-except Exception as e:
-    st.error(f"🤖 Errore durante la connessione iniziale a Groq: {e}")
+# --- MODIFICA CHIAVE: Funzione per la connessione iniziale ---
+# Usiamo il decorator @st.cache_resource per eseguire questa funzione una sola volta per sessione.
+# Questo risolve il problema di chiamare Groq ad ogni interazione.
+@st.cache_resource
+def init_groq_client():
+    api_key = st.secrets.get("GROQ_API_KEY")
+    if not api_key:
+        st.error("🤖 Errore: manca GROQ_API_KEY nei Segreti!")
+        return None, False
 
+    client = groq.Client(api_key=api_key)
+    try:
+        # Questa chiamata "riscalda" la connessione senza mostrare messaggi all'utente.
+        client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": "Hola"}],
+            temperature=0.1,
+            max_tokens=2
+        )
+        return client, True # Ritorna il client e uno stato di successo
+    except Exception as e:
+        st.error(f"🤖 Errore durante la connessione iniziale a Groq: {e}")
+        return None, False
 
-# Titolo
+# Esegui la funzione di inizializzazione.
+# Grazie a @st.cache_resource, il codice all'interno di init_groq_client()
+# verrà eseguito solo la prima volta che l'app viene caricata.
+client, is_connected = init_groq_client()
+
+# Se la connessione fallisce, interrompiamo l'esecuzione dell'app.
+if not is_connected:
+    st.stop()
+
+# Titolo dell'app
 st.header("💬 Xat amb BatllorIA")
 st.subheader("L'Intelligència Artificial de la família Batllori")
 
-# Init state
+# Inizializzazione dello stato della sessione
+# Aggiungiamo 'client' per poterlo usare in altre parti dell'app se necessario
 for key, default in {
     "messages": [],
     "conversation_id": None,
     "session_key": str(uuid.uuid4())[:8],
     "speech_text": "",
+    "client": client # Memorizziamo il client inizializzato
 }.items():
     if key not in st.session_state:
         st.session_state[key] = default
+
+# (Il resto del tuo codice rimane invariato)
 
 # Get spoken_text from URL
 params = st.query_params
@@ -193,7 +209,7 @@ def read_aloud_groq(text: str, voice_id: str = "Celeste-PlayAI") -> BytesIO:
     # Scrive su file temporaneo
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
         tmp_path = tmp.name
-    response.write_to_file(tmp_path)  # richiede path su disco :contentReference[oaicite:2]{index=2}
+    response.write_to_file(tmp_path)
 
     # Carica in BytesIO
     buf = BytesIO()
@@ -244,7 +260,7 @@ if st.button("Envia") and user_input.strip():
         r = requests.post("https://batllori-chat.onrender.com/chat", json={
             "message": user_msg,
             "conversation_id": st.session_state.conversation_id
-        })
+        } )
         rj = r.json()
         bot_response = rj.get("response", "❌ Error")
         st.session_state.conversation_id = rj.get("conversation_id", None)
@@ -270,7 +286,7 @@ if st.button("Envia") and user_input.strip():
 # Reset chat
 if st.button("Reiniciar conversa"):
     try:
-        requests.delete(f"https://batllori-chat.onrender.com/conversations/{st.session_state.conversation_id}")
+        requests.delete(f"https://batllori-chat.onrender.com/conversations/{st.session_state.conversation_id}" )
     except:
         pass
     st.session_state.messages = []
