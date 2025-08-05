@@ -10,6 +10,7 @@ import numpy as np
 import uuid
 import urllib.parse
 import os
+import groq
 from groq import Groq
 import tempfile
 
