@@ -169,7 +169,7 @@ def generate_response(messages):
     )
     return chat_completion.choices[0].message.content
 
-def get_system_prompt_from_question(user_input: str, client) -> str:
+def get_system_prompt_from_question(user_input: str):
     """
     Classifica l'input dell'utente in catalano e restituisce il prompt di sistema appropriato.
 
@@ -197,8 +197,9 @@ Analitza la pregunta de l'usuari i respon només amb una de les tres opcions seg
     ]
 
     try:
+        client = groq.Client(api_key= GROQ_API_KEY)
         chat_completion = client.chat.completions.create(
-            model="llama-3.1-8b-instant",  # Assicurati che il modello sia corretto e disponibile
+            model="llama-3.1-8b-instant",
             messages=messages,
             temperature=0.2 # Usiamo una temperatura bassa per avere risposte più prevedibili
         )
