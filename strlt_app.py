@@ -22,6 +22,8 @@ if not GROQ_API_KEY:
 # conecta amb groq imediatament per disminuir l'espera
 client = groq.Client(api_key=GROQ_API_KEY)
 try:
+    st.write("Connectant amb la IA... pot trigar fins a 30 segons")
+
     chat_completion = client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[
@@ -31,7 +33,7 @@ try:
         temperature=0.1,
         max_tokens=1 
     )
-    st.write("Connessione con Groq stabilita.")
+    st.write("Connexió amb la IA establerta")
 except Exception as e:
     st.error(f"🤖 Errore durante la connessione iniziale a Groq: {e}")
 
