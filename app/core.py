@@ -1,17 +1,18 @@
 # app/core.py
-import groq
-from gtts import gTTS
-from io import BytesIO
-from pydub import AudioSegment
-from fastapi.responses import Response
-
 import os
+import groq
+
+# Assicurati che le variabili d'ambiente siano caricate
+# from dotenv import load_dotenv
+# load_dotenv()
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY")
+if not GROQ_API_KEY:
+    raise ValueError("La variabile d'ambiente GROQ_API_KEY non è stata impostata.")
 
+client = groq.Client(api_key=GROQ_API_KEY)
 
-client = groq.Client(api_key= GROQ_API_KEY)
+# --- PROMPTS ---
 
 SYSTEM_PROMPT = '''
 Ets la Batllor-IA, l'intelligencia artificial de la família Batllori, històrics ceramistes del barri de Sants a Barcelona. Ets una IA divertida, simpatica y amb gana de festa!
@@ -159,72 +160,19 @@ Pots dir-li a la gent que poden trovar el mapa amb els carrers a aquest enllaç:
 i que poden trucar a radio sants per votar el carrer que més li agradi
 """
 
-def get_system_prompt():
-    return SYSTEM_PROMPT
+# --- Funzione di generazione risposta ---
 
-def generate_response(messages):
-    chat_completion = client.chat.completions.create(
-        messages=messages,
-        model="llama-3.3-70b-versatile",
-    )
-    return chat_completion.choices[0].message.content
-
-def get_system_prompt_from_question(user_input: str):
+def generate_response(messages: list) -> str:
     """
-    Classifica l'input dell'utente in catalano e restituisce il prompt di sistema appropriato.
-
-    Args:
-        user_input: La domanda dell'utente in catalano.
-        client: L'istanza del client API (es. OpenAI).
-
-    Returns:
-        Il prompt di sistema scelto.
+    Genera una risposta utilizzando il client Groq.
     """
-    messages = [
-        {
-            "role": "system",
-            "content": """Ets un assistent dels agents de la Batllor-IA, l'intelligencia artificial de una família (Batllori) ceramistes del barri de Sants a Barcelona.
-Estás a la Festa Major de Sants al carrer Papin. Has de ajudar a escullir el prompt correcte per la pregunta que li fan a la Batllor-IA.
-Analitza la pregunta de l'usuari i respon només amb una de les tres opcions següents, sense text addicional:
-- 'Programa': si la pregunta està relacionada amb el programa de la festa, activitats d'avui o dels pròxims dies.
-- 'Carrers': si la pregunta està relacionada amb la decoració d'altres carrers o quins carrers participen a la festa.
-- 'Estàndard': si la pregunta tracta sobre el tema del Carrer Papin, la història de la família Batllori, la ceràmica o qualsevol altre tema. En cas de dubte, tria 'Estàndard'."""
-        },
-        {
-            "role": "user",
-            "content": user_input
-        }
-    ]
-
     try:
-        client = groq.Client(api_key= GROQ_API_KEY)
         chat_completion = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
             messages=messages,
-            temperature=0.2 # Usiamo una temperatura bassa per avere risposte più prevedibili
+            model="llama-3.1-70b-versatile", # Usiamo un modello potente per la risposta finale
         )
-        
-        # 3. Estrai il contenuto del messaggio
-        answer = chat_completion.choices[0].message.content
-
-        # 4. Semplifica e rendi più robusta la logica di selezione.
-        #    Usiamo .strip() per rimuovere spazi e .lower() per ignorare maiuscole/minuscole.
-        cleaned_answer = answer.strip().replace("'", "").lower()
-
-        if cleaned_answer == 'programa':
-            print("-> Classificato come: Programa")
-            return SYSTEM_PROMPT_PROGRAMA
-        elif cleaned_answer == 'carrers':
-            print("-> Classificato come: Carrers")
-            return SYSTEM_PROMPT_CARRERS
-        else: # Include 'estàndard' e qualsiasi altra risposta inaspettata
-            print(f"-> Classificato come: Estàndard (Risposta ricevuta: '{answer}')")
-            return SYSTEM_PROMPT
-
+        return chat_completion.choices[0].message.content
     except Exception as e:
-        # 5. Gestisci possibili errori durante la chiamata API.
-        print(f"S'ha produït un error durant la trucada a l'API: {e}")
-        # In caso di errore, restituisci il prompt di default per sicurezza.
-        return SYSTEM_PROMPT
-
+        print(f"Errore durante la generazione della risposta: {e}")
+        return "Hi ha hagut un problema, intenta-ho de nou més tard."
 
