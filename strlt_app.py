@@ -65,7 +65,7 @@ user_input = st.text_input("Tu:", key=input_key, value=default_input)
 if not st.session_state.speech_text:
     components.html("""
     <div style="margin-top:10px;">
-      <button id="mic" style="font-size:1.3em; padding:0.5em 1.5em; cursor:pointer;">🎤 Parla</button>
+      <button id="mic" style="font-size:0.9em; padding:0.2em 0.6em; cursor:pointer;">🎤 Parla</button>
       <p id="debug_text" style="font-size:1em; font-style:italic; color:#555;"></p>
     </div>
     <script>
