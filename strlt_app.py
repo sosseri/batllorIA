@@ -147,6 +147,8 @@ def play_audio_sequence(sentences):
             </audio>
             """
         components.html(audio_html, height=0)
+        pause_duration = len(sentence.split()) * (0.5/(np.mean([len(x) for x in sentence.split()]))*5)
+        time.sleep(pause_duration)
         
     # Clear the input field after audio finishes playing
     st.session_state.temp_speech_input = ""
@@ -239,7 +241,7 @@ if st.button("Envia") and user_input.strip():
     #st.write(f"🎧 Audio ricevuto: {len(audio_buf.getbuffer())} bytes")
 
     #free service robotic voice
-    play_audio_sequence([bot_response])
+    play_audio_sequence(bot_response)
 
     # Reset del testo vocale e session_key
     st.session_state.speech_text = ""
