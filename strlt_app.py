@@ -141,7 +141,7 @@ def play_audio_sequence(sentences):
     else:
         sentence = sentences
         audio_b64 = generate_audio_base64(sentence)
-            audio_html = f"""
+        audio_html = f"""
             <audio autoplay>
                 <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3">
             </audio>
