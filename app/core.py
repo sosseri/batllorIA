@@ -180,12 +180,11 @@ def get_system_prompt_from_question(user_input: str, client) -> str:
     Returns:
         Il prompt di sistema scelto.
     """
-    # 1. Il messaggio di sistema per il classificatore deve essere chiaro e separato dal ruolo.
-    #    Il ruolo deve essere 'system' o 'user', non una descrizione.
     messages = [
         {
             "role": "system",
-            "content": """Ets un assistent expert a classificar preguntes en català.
+            "content": """Ets un assistent dels agents de la Batllor-IA, l'intelligencia artificial de una família (Batllori) ceramistes del barri de Sants a Barcelona.
+Estás a la Festa Major de Sants al carrer Papin. Has de ajudar a escullir el prompt correcte per la pregunta que li fan a la Batllor-IA.
 Analitza la pregunta de l'usuari i respon només amb una de les tres opcions següents, sense text addicional:
 - 'Programa': si la pregunta està relacionada amb el programa de la festa, activitats d'avui o dels pròxims dies.
 - 'Carrers': si la pregunta està relacionada amb la decoració d'altres carrers o quins carrers participen a la festa.
@@ -198,14 +197,13 @@ Analitza la pregunta de l'usuari i respon només amb una de les tres opcions seg
     ]
 
     try:
-        # 2. La chiamata all'API era mal formattata.
         chat_completion = client.chat.completions.create(
             model="llama-3.1-8b-instant",  # Assicurati che il modello sia corretto e disponibile
             messages=messages,
-            temperature=0.0 # Usiamo una temperatura bassa per avere risposte più prevedibili
+            temperature=0.2 # Usiamo una temperatura bassa per avere risposte più prevedibili
         )
         
-        # 3. Estrai il contenuto del messaggio in modo sicuro.
+        # 3. Estrai il contenuto del messaggio
         answer = chat_completion.choices[0].message.content
 
         # 4. Semplifica e rendi più robusta la logica di selezione.
