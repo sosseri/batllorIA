@@ -18,6 +18,13 @@ st.set_page_config(page_title="Xat amb Batllori", page_icon="💬")
 GROQ_API_KEY = st.secrets.get("GROQ_API_KEY")
 if not GROQ_API_KEY:
     st.error("🤖 Errore: manca GROQ_API_KEY nei Segreti!")
+# conecta amb groq imediatament per disminuir l'espera
+chat_completion = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages= [        {"role": "system","content": """Write 'Hola'"""},        {"role": "user",  "content": " "}    ],
+            temperature=0.1
+        )
+
 
 # Titolo
 st.header("💬 Xat amb BatllorIA")
@@ -94,7 +101,7 @@ if not st.session_state.speech_text:
         };
       };
     </script>
-    """, height=130)
+    """, height=50)
 else:
     # Mostra messaggio di conferma quando c'è testo trascritto
     st.success(f"🎤 Testo trascritto: '{st.session_state.speech_text}' - Modifica se necessario e premi Envia")
