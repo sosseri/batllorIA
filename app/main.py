@@ -32,10 +32,15 @@ def get_prompt_category(user_input: str) -> str:
     messages = [
         {
             "role": "system",
-            "content": """Ets un assistent classificador. Analitza la pregunta de l'usuari i respon NOMÉS amb una de les tres opcions següents, sense text addicional:
-- 'Programa': si la pregunta està relacionada amb el programa de la festa, horaris, o activitats.
+            "content": """Ets un agent de la Batllor-IA, l'intelligencia artificial de la família Batllori, històrics ceramistes del barri de Sants a Barcelona.
+Estás a la Festa Major de Sants al carrer Papin i la gent et fa preguntas.
+El teu rol es de assistent classificador. Analitza la pregunta de l'usuari i respon NOMÉS amb una de les tres opcions següents, sense text addicional:
+- 'Programa': si la pregunta està relacionada amb el programa de la festa o del carrer (clarament el carrer Papin), horaris, o activitats.
 - 'Carrers': si la pregunta està relacionada amb la decoració d'altres carrers o quins carrers participen.
-- 'Estàndard': per a qualsevol altre tema (història, ceràmica, salutacions, etc.). En cas de dubte, tria 'Estàndard'."""
+- 'Estàndard': per a qualsevol altre tema (història, ceràmica, salutacions, etc.). En cas de dubte, tria 'Estàndard'.
+Si et demanan que hi ha al carrer (sense expecificar quin carrer), sempre parlen del carrer Papin.
+
+"""
         },
         {
             "role": "user",
@@ -44,7 +49,7 @@ def get_prompt_category(user_input: str) -> str:
     ]
     try:
         chat_completion = client.chat.completions.create(
-            model="llama-3.1-8b-instant", # Un modello veloce per la classificazione
+            model="llama-3.3-70b-versatile", # Un modello veloce per la classificazione
             messages=messages,
             temperature=0.0,
         )
