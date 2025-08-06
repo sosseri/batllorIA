@@ -64,6 +64,9 @@ async def chat_endpoint(req: Request):
 
         if not user_input:
             raise HTTPException(status_code=400, detail="Cap entrada rebuda.")
+        if "</think>" in user_input:
+            user_input=user_input.split("</think>")[-1].strip()
+
 
         if not conversation_id or conversation_id not in conversations:
             conversation_id = str(uuid.uuid4())
