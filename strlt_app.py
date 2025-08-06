@@ -13,6 +13,7 @@ import os
 import groq
 from groq import Groq
 import tempfile
+import re
 
 # Configurazione della pagina (da fare come prima cosa)
 st.set_page_config(page_title="Xat amb Batllori", page_icon="💬")
@@ -263,6 +264,8 @@ if st.button("Envia") and user_input.strip():
         } )
         rj = r.json()
         bot_response = rj.get("response", "❌ Error")
+        # remove the thinking
+        bot_response = re.sub(r"<think>.*?</think>\n?", "",bot_response, flags=re.DOTALL)
         st.session_state.conversation_id = rj.get("conversation_id", None)
     except Exception as e:
         bot_response = f"❌ Error: {e}"
