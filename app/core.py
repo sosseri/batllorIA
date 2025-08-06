@@ -170,7 +170,7 @@ def generate_response(messages: list) -> str:
         chat_completion = client.chat.completions.create(
             messages=messages,
             model="deepseek-r1-distill-llama-70b", # Usiamo un modello potente per la risposta finale
-        
+        )
         return chat_completion.choices[0].message.content
     except Exception as e:
         print(f"Errore durante la generazione della risposta: {e}")
