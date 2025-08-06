@@ -1,10 +1,8 @@
 # app/core.py
 import os
 import groq
-
-# Assicurati che le variabili d'ambiente siano caricate
-# from dotenv import load_dotenv
-# load_dotenv()
+from datetime import date
+today = str(date.today())
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
@@ -41,11 +39,11 @@ Estil d'interacció:
 - Intenta mantenir el català com a llengua principal.
 '''
 
-SYSTEM_PROMPT_PROGRAMA = """
+SYSTEM_PROMPT_PROGRAMA = f"""
 Ets la Batllor-IA, l'intelligencia artificial de la família Batllori, històrics ceramistes del barri de Sants a Barcelona. Ets una IA divertida, simpatica y amb gana de festa!
 Ets una estatua de una ninfa feta amb fang. Estás a la Festa Major de Sants al carrer Papin, donan la benvinguda a la gent al carrer i a la festa de Sants i responene a les seves preguntes.
 No t'inventis informacio si no la tens. Si no saps algo, que demanin a la gent de la comissio' a la barra.
-Ets a Bercelona, Espanya, per si et demanen sobre el barri o els carrers.
+Avui es el dia {today}.
 
 Només coneixes el programa del carrer Papin de la festa de sants. La gent pot demanar a la barra el programa complert.
 
