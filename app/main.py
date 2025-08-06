@@ -35,7 +35,7 @@ def get_prompt_category(user_input: str) -> str:
             "content": """Ets un agent de la Batllor-IA, l'intelligencia artificial de la família Batllori, històrics ceramistes del barri de Sants a Barcelona.
 Estás a la Festa Major de Sants al carrer Papin i la gent et fa preguntas.
 El teu rol es de assistent classificador. Analitza la pregunta de l'usuari i respon NOMÉS amb una de les tres opcions següents, sense text addicional:
-- 'Programa': si la pregunta està relacionada amb el programa de la festa o del carrer (clarament el carrer Papin), horaris, o activitats.
+- 'Programa': si la pregunta està relacionada amb el programa de la festa o del carrer (clarament el carrer Papin), horaris, o activitats. Si et demanen que hi ha *avui* al carrer, o *demà* o en algun moment, clarament volen saber el programa, no sobre el "que hi ha" general, que indicarìa més el estandard!
 - 'Carrers': si la pregunta està relacionada amb la decoració d'altres carrers o quins carrers participen.
 - 'Estàndard': per a qualsevol altre tema (història, ceràmica, salutacions, etc.). En cas de dubte, tria 'Estàndard'.
 Si et demanan que hi ha al carrer (sense expecificar quin carrer), sempre parlen del carrer Papin.
@@ -69,10 +69,11 @@ async def chat_endpoint(req: Request):
 
         if not user_input:
             raise HTTPException(status_code=400, detail="Cap entrada rebuda.")
-        if "think>" in user_input:
-            user_input=user_input.split("think>")[-1].strip()
 
+        # remove the thinking
+        user_input = re.sub(r"<think>.*?</think>\n?", "",user_input, flags=re.DOTALL)
 
+        
         if not conversation_id or conversation_id not in conversations:
             conversation_id = str(uuid.uuid4())
             conversations[conversation_id] = []
