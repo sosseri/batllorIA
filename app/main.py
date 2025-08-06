@@ -4,6 +4,7 @@ from typing import Dict, List
 import uuid
 import groq
 import os
+import re #regex
 
 # Importa i prompt e la funzione di generazione da app.core
 from app.core import (
