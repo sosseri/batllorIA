@@ -71,27 +71,35 @@ async def chat_endpoint(req: Request):
         if not user_input:
             raise HTTPException(status_code=400, detail="Cap entrada rebuda.")
 
-        
         if not conversation_id or conversation_id not in conversations:
             conversation_id = str(uuid.uuid4())
             conversations[conversation_id] = []
 
         conversation_history = conversations[conversation_id]
-        conversation_history.append({"role": "user", "content": user_input})
+        
+        # Rimuovi il vecchio prompt di sistema se presente e aggiungi il nuovo
+        if conversation_history and conversation_history[0]["role"] == "system":
+            conversation_history.pop(0)
 
-        # 1. Classifica l'input per scegliere il prompt
+        # 1. Classifica l\'input per scegliere il prompt
         category = get_prompt_category(user_input)
 
         # 2. Seleziona il prompt di sistema corretto
-        if category == 'programa':
+        if category == \'programa\':
             system_prompt = SYSTEM_PROMPT_PROGRAMA
-        elif category == 'carrers':
+        elif category == \'carrers\':
             system_prompt = SYSTEM_PROMPT_CARRERS
         else:
             system_prompt = SYSTEM_PROMPT
         
-        # 3. Prepara i messaggi per l'API
-        messages = [{"role": "system", "content": system_prompt}] + conversation_history
+        # Aggiungi il prompt di sistema all\'inizio della cronologia
+        conversation_history.insert(0, {"role": "system", "content": system_prompt})
+
+        # Aggiungi il messaggio dell\'utente alla cronologia
+        conversation_history.append({"role": "user", "content": user_input})
+
+        # 3. Prepara i messaggi per l\'API (la cronologia ora include il prompt di sistema)
+        messages = conversation_history
         
         # 4. Genera la risposta
         reply = generate_response(messages)
@@ -104,11 +112,10 @@ async def chat_endpoint(req: Request):
             "conversation_id": conversation_id
         }
     except Exception as e:
-        # Log dell'errore per il debug
-        print(f"Errore nell'endpoint /chat: {e}")
+        # Log dell\'errore per il debug
+        print(f"Errore nell\'endpoint /chat: {e}")
         raise HTTPException(status_code=500, detail=f"Error intern: {str(e)}")
 
-# ... (gli altri endpoint rimangono invariati) ...
 @app.get("/")
 def read_root():
     return {"message": "Hello from Batllori API"}
