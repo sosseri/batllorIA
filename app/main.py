@@ -89,9 +89,9 @@ async def chat_endpoint(req: Request):
         category = get_prompt_category(user_input)
 
         # 2. Seleziona il prompt di sistema corretto
-        if category == \'programa\':
+        if category == 'programa':
             system_prompt = SYSTEM_PROMPT_PROGRAMA
-        elif category == \'carrers\':
+        elif category == 'carrers':
             system_prompt = SYSTEM_PROMPT_CARRERS
         else:
             system_prompt = SYSTEM_PROMPT
