@@ -48,7 +48,7 @@ def play_audio_sequence(sentences):
         """
         components.html(audio_html, height=0)
         # Adjust pause duration: shorter for short sentences, minimal base pause
-        pause_duration = len(sentence.split()) * (0.5/(np.mean([len(x) for x in sentence.split()]))*5)
+        pause_duration = len(sentence.split()) * (0.5/(np.mean([len(x) for x in sentence.split()]))*4.5)
         time.sleep(pause_duration)
     
     # Clear the input field after audio finishes playing
