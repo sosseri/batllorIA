@@ -135,12 +135,11 @@ def get_bot_response(user_message: str):
         bot_response = response_data.get("response", "❌ Error de connexió")
         
         bot_response = re.sub(
-            r"\s*<think\b[^>]*>.*?<Thinking>
-</Thinking>\s*", 
-            "", 
-            bot_response, 
-            flags=re.DOTALL | re.IGNORECASE
-        )
+    r"\s*<think\b[^>]*>.*?<Thinking>\s*</Thinking>\s*",
+    "",
+    bot_response,
+    flags=re.DOTALL | re.IGNORECASE
+)
         
         st.session_state.conversation_id = response_data.get("conversation_id")
         
