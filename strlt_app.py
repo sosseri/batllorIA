@@ -134,12 +134,11 @@ def process_message(user_message: str):
         
         # Clean response (remove think blocks)
         bot_response = re.sub(
-            r"\s*<think\b[^>]*>.*?<Thinking>
-</Thinking>\s*", 
-            "", 
-            bot_response, 
-            flags=re.DOTALL | re.IGNORECASE
-        )
+    r"\s*<think\b[^>]*>.*?</think>\s*",
+    "",
+    bot_response,
+    flags=re.DOTALL | re.IGNORECASE
+)
         
         # Update conversation ID
         st.session_state.conversation_id = response_data.get("conversation_id")
