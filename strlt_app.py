@@ -4,6 +4,8 @@ from gtts import gTTS
 from io import BytesIO
 import base64
 import re
+import streamlit.components.v1 as components
+
 
 # ---------- PAGE CONFIG ----------
 st.set_page_config(page_title="Xat amb BatllorIA", page_icon="💬", layout="centered")
@@ -104,16 +106,23 @@ def generate_audio_base64(text: str) -> str:
     return base64.b64encode(buf.read()).decode()
 
 def play_audio(text: str):
+    """Generate and play audio in Streamlit"""
     try:
-        b64_audio = generate_audio_base64(text)
+        tts = gTTS(text=text, lang='ca')
+        buf = BytesIO()
+        tts.write_to_fp(buf)
+        buf.seek(0)
+        b64_audio = base64.b64encode(buf.read()).decode()
+
         audio_html = f"""
         <audio autoplay>
             <source src="data:audio/mp3;base64,{b64_audio}" type="audio/mp3">
         </audio>
         """
-        st.markdown(audio_html, unsafe_allow_html=True)
-    except Exception:
-        pass
+        components.html(audio_html, height=0)
+    except Exception as e:
+        st.warning(f"No s'ha pogut reproduir l'àudio: {e}")
+
 
 # ---------- MESSAGE HANDLER ----------
 def process_message(user_message: str):
