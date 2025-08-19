@@ -176,9 +176,8 @@ with st.form(key="chat_form", clear_on_submit=True):
     
     if submitted and user_input.strip():
         process_message(user_input)
-        # Reset del testo vocale e session_key
-        st.session_state.speech_text = ""
-        st.session_state.session_key = str(uuid.uuid4())[:8]
+        time.sleep(min(5, len(user_input.split()) * 0.5))
+        st.rerun()
 
 
 # ---------- RESET ----------
