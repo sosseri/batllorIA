@@ -111,7 +111,7 @@ if st.button("🔄 Reiniciar conversa"):
             pass
     st.session_state.messages = []
     st.session_state.conversation_id = None
-    st.experimental_rerun()
+    st.rerun()
 
 # ---------- PROCESSING INDICATOR ----------
 if st.session_state.processing:
