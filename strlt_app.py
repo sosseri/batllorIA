@@ -1,103 +1,151 @@
+# strlt_app.py - updated
 import streamlit as st
 import requests
 from gtts import gTTS
 from io import BytesIO
 import base64
-import re
 import streamlit.components.v1 as components
+import re
+import time
+import numpy as np
+import uuid
+import urllib.parse
+import os
+import groq
+from groq import Groq
+import tempfile
 
+# Page config
+st.set_page_config(page_title="Xat amb BatllorIA", page_icon="💬")
 
-# ---------- PAGE CONFIG ----------
-st.set_page_config(page_title="Xat amb BatllorIA", page_icon="💬", layout="centered")
+# ---- Init Groq client once per session ----
+@st.cache_resource
+def init_groq_client():
+    api_key = st.secrets.get("GROQ_API_KEY")
+    if not api_key:
+        st.error("🤖 Falta GROQ_API_KEY!")
+        return None, False
+    client = groq.Client(api_key=api_key)
+    try:
+        # warm-up call (very small)
+        client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": "Hola"}],
+            temperature=0.1,
+            max_tokens=2
+        )
+        return client, True
+    except Exception as e:
+        st.error(f"Error Groq init: {e}")
+        return None, False
 
-# ---------- INIT STATE ----------
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-if "conversation_id" not in st.session_state:
-    st.session_state.conversation_id = None
-if "processing" not in st.session_state:
-    st.session_state.processing = False
+client, is_connected = init_groq_client()
+if not is_connected:
+    st.stop()
 
-# ---------- CUSTOM CSS ----------
-st.markdown("""
-<style>
-    /* Global */
-    body {
-        background-color: #fafafa;
-        font-family: 'Helvetica Neue', sans-serif;
-    }
+# ---- Session state defaults ----
+defaults = {
+    "messages": [],
+    "conversation_id": None,
+    "session_key": str(uuid.uuid4())[:8],
+    "speech_text": "",
+    "to_send": None,
+    "sending": False,
+    "client": client
+}
+for k, v in defaults.items():
+    if k not in st.session_state:
+        st.session_state[k] = v
 
-    /* Header */
-    .main-header {
-        background: url('https://upload.wikimedia.org/wikipedia/commons/0/0c/Azulejo_pattern.svg');
-        background-size: cover;
-        background-position: center;
-        border-radius: 16px;
-        padding: 2rem;
-        text-align: center;
-        color: #222;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    .main-header h1 {
-        margin: 0;
-        font-size: 1.8rem;
-    }
-    .main-header h2 {
-        margin-top: 0.5rem;
-        font-weight: 400;
-        color: #444;
-    }
-    .badge {
-        display: inline-block;
-        margin-top: 0.8rem;
-        padding: 0.3rem 0.8rem;
-        background: #ffeed9;
-        color: #d35400;
-        border-radius: 12px;
-        font-size: 0.9rem;
-        font-weight: 600;
-    }
+# ---- Get spoken_text from URL (if redirected by browser recognition) ----
+params = st.query_params
+spoken = params.get("spoken_text", "")
+spoken = urllib.parse.unquote(spoken) if spoken else ""
+if spoken:
+    # Put it into session state and clear query params
+    st.session_state.speech_text = spoken
+    st.session_state.to_send = spoken
+    # clear the query params so a refresh doesn't re-trigger
+    try:
+        st.set_query_params()
+    except Exception:
+        # some Streamlit versions may not support; ignore if fails
+        pass
 
-    /* Chat bubbles */
-    .chat-bubble-user {
-        background: #e1f5fe;
-        padding: 0.7rem 1rem;
-        border-radius: 16px;
-        margin: 0.4rem 0;
-        max-width: 80%;
-        align-self: flex-end;
-        margin-left: auto;
-    }
-    .chat-bubble-bot {
-        background: #fff3e0;
-        padding: 0.7rem 1rem;
-        border-radius: 16px;
-        margin: 0.4rem 0;
-        max-width: 80%;
-        align-self: flex-start;
-        margin-right: auto;
-    }
+# ---- UI Header ----
+st.header("💬 Xat amb BatllorIA")
+st.subheader("L'Intelligència Artificial de la família Batllori")
 
-    /* Input bar */
-    .stTextInput>div>div>input {
-        border-radius: 20px;
-        border: 1px solid #ddd;
-        padding: 0.6rem 1rem;
-    }
-</style>
-""", unsafe_allow_html=True)
+# ---- Chat history (single source of truth) ----
+# Render messages from session_state.messages only
+for msg in st.session_state.messages:
+    role = msg.get("role", "Tu")
+    content = msg.get("content", "")
+    st.markdown(f"**{role}:** {content}")
 
-# ---------- HEADER ----------
-st.markdown("""
-<div class="main-header">
-    <h1>💬 Xat amb BatllorIA</h1>
-    <h2>L'Intelligència Artificial de la família Batllori</h2>
-    <div class="badge">🎉 Festa Major de Sants 2025 🎉</div>
+# ---- Input field (prefill with speech_text if present) ----
+input_key = f"input_text_{st.session_state.session_key}"
+user_input = st.text_input("Tu:", key=input_key, value=st.session_state.speech_text)
+
+# ---- Microphone button (single stable component) ----
+# JS stops automatically on silence via onspeechend and redirects only when a result exists.
+components.html("""
+<div style="margin-top:10px;">
+  <button id="mic" style="font-size:0.95em; padding:0.25em 0.8em; cursor:pointer;">🎤 Parla</button>
+  <span id="debug_text" style="font-size:0.95em; margin-left:0.6em; color:#555;"></span>
 </div>
-""", unsafe_allow_html=True)
+<script>
+  const mic = document.getElementById("mic");
+  const debug = document.getElementById("debug_text");
 
-# ---------- AUDIO ----------
+  mic.onclick = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      debug.innerText = "⚠️ El navegador no suporta SpeechRecognition.";
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ca-ES';
+    recognition.interimResults = false; // do not flood with partials
+    recognition.maxAlternatives = 1;
+    recognition.continuous = false; // stop on silence
+
+    debug.innerText = "🎙️ Escoltant...";
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      debug.innerText = "🔊 " + transcript;
+      // small delay so user sees the "has said" text, then redirect with param
+      setTimeout(() => {
+        const currentUrl = window.location.pathname;
+        window.location.href = currentUrl + "?spoken_text=" + encodeURIComponent(transcript);
+      }, 250);
+    };
+
+    recognition.onspeechend = () => {
+      // stop automatically when the user stops speaking
+      try { recognition.stop(); } catch(e) {}
+      debug.innerText = "⏹️ Enregistrament finalitzat.";
+    };
+
+    recognition.onerror = (e) => {
+      debug.innerText = "⚠️ Error reconeixement: " + (e.error || "unknown");
+    };
+
+    recognition.onend = () => {
+      // if no result happened, give a hint
+      if (!debug.innerText.startsWith("🔊")) {
+        debug.innerText = "⏹️ No s'ha detectat veu.";
+      }
+    };
+
+    recognition.start();
+  };
+</script>
+""", height=100)
+
+# ---- Audio helper functions ----
 def generate_audio_base64(text: str) -> str:
     tts = gTTS(text=text, lang='ca')
     buf = BytesIO()
@@ -105,87 +153,87 @@ def generate_audio_base64(text: str) -> str:
     buf.seek(0)
     return base64.b64encode(buf.read()).decode()
 
-def play_audio(text: str):
-    """Generate and play audio in Streamlit"""
-    try:
-        tts = gTTS(text=text, lang='ca')
-        buf = BytesIO()
-        tts.write_to_fp(buf)
-        buf.seek(0)
-        b64_audio = base64.b64encode(buf.read()).decode()
-
+def play_audio_sequence(text: str):
+    # split into sentences and play them sequentially
+    if isinstance(text, str):
+        sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+    else:
+        sentences = list(text)
+    for s in sentences:
+        if not s.strip():
+            continue
+        b64 = generate_audio_base64(s)
         audio_html = f"""
         <audio autoplay>
-            <source src="data:audio/mp3;base64,{b64_audio}" type="audio/mp3">
+            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
         </audio>
         """
         components.html(audio_html, height=0)
-    except Exception as e:
-        st.warning(f"No s'ha pogut reproduir l'àudio: {e}")
+        # reasonable pause after sentence
+        pause = min(4.0, max(0.6, 0.25 * len(s.split())))
+        time.sleep(pause)
 
-
-# ---------- MESSAGE HANDLER ----------
-def process_message(user_message: str):
-    if not user_message.strip() or st.session_state.processing:
+# ---- Send / handle message logic (no printing here) ----
+def handle_send(msg: str):
+    """Appends user message, calls backend, appends bot reply, plays audio, reruns once."""
+    if not msg or st.session_state.get("sending"):
         return
-    
-    st.session_state.processing = True
-    st.session_state.messages.append({"role": "user", "content": user_message.strip()})
-    
+
+    st.session_state.sending = True
+    # append user message (history source)
+    st.session_state.messages.append({"role": "Tu", "content": msg})
+
+    # call backend
     try:
-        response = requests.post(
-            "https://batllori-chat.onrender.com/chat", 
-            json={
-                "message": user_message.strip(),
-                "conversation_id": st.session_state.conversation_id
-            }, 
-            timeout=20
-        )
-        data = response.json()
-        bot_response = data.get("response", "❌ Error de connexió")
-        st.session_state.conversation_id = data.get("conversation_id")
-
-        bot_response = re.sub(r"<think.*?>.*?</Thinking>", "", bot_response, flags=re.DOTALL | re.IGNORECASE)
+        r = requests.post("https://batllori-chat.onrender.com/chat", json={
+            "message": msg,
+            "conversation_id": st.session_state.conversation_id
+        }, timeout=20)
+        rj = r.json()
+        bot_response = rj.get("response", "❌ Error")
+        # remove think blocks safely
+        bot_response = re.sub(r"\s*<think\b[^>]*>.*?</think>\s*", "", bot_response, flags=re.DOTALL | re.IGNORECASE)
+        st.session_state.conversation_id = rj.get("conversation_id", None)
     except Exception as e:
-        bot_response = f"❌ Error: {str(e)}"
-    
-    st.session_state.messages.append({"role": "bot", "content": bot_response})
-    play_audio([bot_response.replace("*", "").replace("#", "")])
-    st.session_state.processing = False
+        bot_response = f"❌ Error: {e}"
 
-# ---------- WELCOME ----------
-if not st.session_state.messages:
-    st.markdown("### 🎭 Benvingut a la Festa de Sants! \nPregunta'm qualsevol cosa sobre la festa major del barri.")
+    # append bot reply to history (single source)
+    st.session_state.messages.append({"role": "BatllorIA", "content": bot_response})
 
-# ---------- CHAT ----------
-for msg in st.session_state.messages:
-    if msg["role"] == "user":
-        st.markdown(f"<div class='chat-bubble-user'>🧑 {msg['content']}</div>", unsafe_allow_html=True)
-    else:
-        st.markdown(f"<div class='chat-bubble-bot'>🤖 {msg['content']}</div>", unsafe_allow_html=True)
+    # play reply audio (non-blocking-ish)
+    try:
+        play_audio_sequence(bot_response)
+    except Exception:
+        # if TTS fails, ignore and continue
+        pass
 
-# ---------- INPUT ----------
-with st.form(key="chat_form", clear_on_submit=True):
-    cols = st.columns([4,1])
-    with cols[0]:
-        user_input = st.text_input("Escriu el teu missatge...", "")
-    with cols[1]:
-        submitted = st.form_submit_button("📨 Envia", type="primary")
-    
-    if submitted and user_input.strip():
-        process_message(user_input)
-        st.rerun()
+    # cleanup
+    st.session_state.speech_text = ""
+    st.session_state.to_send = None
+    st.session_state.session_key = str(uuid.uuid4())[:8]
+    st.session_state.sending = False
 
-# ---------- RESET ----------
-if st.button("🔄 Reiniciar conversa"):
-    if st.session_state.conversation_id:
-        try:
-            requests.delete(f"https://batllori-chat.onrender.com/conversations/{st.session_state.conversation_id}")
-        except Exception:
-            pass
-    st.session_state.messages = []
-    st.session_state.conversation_id = None
+    # finally rerun so the page re-renders showing the new history (no duplicated prints)
     st.rerun()
 
-if st.session_state.processing:
-    st.info("🤖 Processant la teva pregunta...")
+# ---- Auto-send if we have a to_send from the microphone redirect ----
+if st.session_state.to_send and not st.session_state.sending:
+    # handle_send will set sending and rerun; keep this guard so it runs exactly once
+    handle_send(st.session_state.to_send)
+
+# ---- Manual send button (user typed) ----
+if st.button("Envia") and user_input.strip():
+    handle_send(user_input.strip())
+
+# ---- Reset chat ----
+if st.button("Reiniciar conversa"):
+    try:
+        requests.delete(f"https://batllori-chat.onrender.com/conversations/{st.session_state.conversation_id}")
+    except Exception:
+        pass
+    st.session_state.messages = []
+    st.session_state.conversation_id = None
+    st.session_state.speech_text = ""
+    st.session_state.to_send = None
+    st.session_state.session_key = str(uuid.uuid4())[:8]
+    st.rerun()
