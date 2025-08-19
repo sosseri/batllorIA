@@ -177,7 +177,7 @@ with st.form(key="chat_form", clear_on_submit=True):
     
     if submitted and user_input.strip():
         process_message(user_input)
-        time.sleep(min(5, len(user_input.split()) * 0.5))
+        time.sleep(max(5, len(user_input.split()) * 0.5))
         st.rerun()
 
 
