@@ -155,7 +155,6 @@ def process_message(user_message: str):
     st.session_state.messages.append({"role": "bot", "content": bot_response})
     play_audio(bot_response.replace("*", "").replace("#", ""))
     st.session_state.processing = False
-    time.sleep(max(5, len(user_input.split()) * 0.5))
     
 # ---------- WELCOME ----------
 if not st.session_state.messages:
@@ -178,7 +177,7 @@ with st.form(key="chat_form", clear_on_submit=True):
     
     if submitted and user_input.strip():
         process_message(user_input)
-        
+        time.sleep(max(5, len(user_input.split()) * 0.5))
         st.rerun()
 
 
