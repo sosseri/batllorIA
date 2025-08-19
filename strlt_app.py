@@ -7,6 +7,7 @@ import re
 import streamlit.components.v1 as components
 import uuid
 import time
+import numpy as np
 
 
 
@@ -148,13 +149,27 @@ def process_message(user_message: str):
         bot_response = data.get("response", "❌ Error de connexió")
         st.session_state.conversation_id = data.get("conversation_id")
 
+        # pulizia dal think
         bot_response = re.sub(r"<think.*?>.*?</Thinking>", "", bot_response, flags=re.DOTALL | re.IGNORECASE)
     except Exception as e:
         bot_response = f"❌ Error: {str(e)}"
     
+    # --- Mostra subito la risposta ---
     st.session_state.messages.append({"role": "bot", "content": bot_response})
+    
+    # --- Placeholder per indicare che parte la lettura ---
+    placeholder = st.empty()
+    placeholder.info("🔊 El bot està llegint la resposta...")
+    
+    # --- Lancia audio ---
     play_audio(bot_response.replace("*", "").replace("#", ""))
+    
+    # --- Dopo qualche secondo rimuovi il placeholder ---
+    time.sleep(1)  # piccolo delay per non sparire subito
+    placeholder.empty()
+    
     st.session_state.processing = False
+
     
 # ---------- WELCOME ----------
 if not st.session_state.messages:
