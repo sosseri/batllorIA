@@ -100,7 +100,7 @@ with st.form(key="chat_form", clear_on_submit=True):
     
     if submitted and user_input.strip():
         process_message(user_input)
-        st.experimental_rerun()
+        st.rerun()
 
 # ---------- RESET ----------
 if st.button("🔄 Reiniciar conversa"):
