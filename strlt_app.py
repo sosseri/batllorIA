@@ -124,8 +124,6 @@ def play_audio(text: str):
         </audio>
         """
         components.html(audio_html, height=0)
-        pause_duration = len(user_input.split()) * 0.5
-        time.sleep(pause_duration)
     except Exception as e:
         st.warning(f"No s'ha pogut reproduir l'àudio: {e}")
 
@@ -168,6 +166,9 @@ def process_message(user_message: str):
     # 4. Now play audio
     play_audio(bot_response.replace("*", "").replace("#", ""))
 
+    # 5. pause
+    pause_duration = len(user_input.split()) * 4.75
+    time.sleep(pause_duration)
     
 # ---------- WELCOME ----------
 if not st.session_state.messages:
