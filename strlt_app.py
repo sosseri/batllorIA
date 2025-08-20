@@ -137,8 +137,8 @@ st.markdown("""
 
 # ---------- WELCOME ----------
 if not st.session_state.messages:
-    st.markdown("### 🎭 Benvingut a la Festa de Sants! ")
-    st.markdown("Pregunta'm qualsevol cosa sobre la festa major del barri.")
+    st.markdown("## 🎭 Benvingut a la Festa de Sants! ")
+    st.markdown("#### Pregunta'm qualsevol cosa sobre la festa major del barri.")
     st.markdown("<small>❗La primera interacció pot trigar fins a 1 minut❗️</small>", unsafe_allow_html=True)
 
 # ---------- Render chat messages ----------
