@@ -165,10 +165,6 @@ def process_message(user_message: str):
 
     # 4. Now play audio
     play_audio(bot_response.replace("*", "").replace("#", ""))
-
-    # 5. pause
-    pause_duration = len(user_input.split()) * 4.75
-    time.sleep(pause_duration)
     
 # ---------- WELCOME ----------
 if not st.session_state.messages:
@@ -191,6 +187,9 @@ with st.form(key="chat_form", clear_on_submit=True):
     
     if submitted and user_input.strip():
         process_message(user_input)
+        # pause before rerun
+        pause_duration = len(user_input.split()) * 4.75
+        time.sleep(pause_duration)
         st.rerun()
 
 
