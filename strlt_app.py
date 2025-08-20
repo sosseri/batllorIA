@@ -224,6 +224,7 @@ if not st.session_state.messages:
         "Quines són les altres vies de la festa?",
         "Què hi ha avui al carrer Papin?",
         "Què hi ha demà al carrer Papin?",
+        "Què hi ha avui a la festa de Sants?"
     ]
     for i, q in enumerate(suggestions):
         st.button(q, key=f"sugg_{i}", on_click=send_suggested, args=(q,), use_container_width=False)
