@@ -228,6 +228,6 @@ if st.session_state.processing:
     st.info("🤖 Processing your question...")
 
 # ---------- NOTES ----------
-st.markdown("
+st.markdown("""
 ---
-*Notes:* audio is synthesized only when you press the speaker icon. The generated MP3 is kept in memory for the session so pressing the icon again will replay without regenerating until the session resets.")
+*Notes:* audio is synthesized only when you press the speaker icon. The generated MP3 is kept in memory for the session so pressing the icon again will replay without regenerating until the session resets.""")
