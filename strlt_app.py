@@ -6,7 +6,6 @@ import base64
 import re
 import streamlit.components.v1 as components
 import uuid
-import time
 import html
 
 # ---------------------------------------------------
@@ -15,7 +14,9 @@ import html
 # - A small "speaker" logo (emoji) is shown next to each bot message
 # - When pressed the server generates the MP3 and the client plays it (autoplay)
 # Comments in English throughout
-# FIX: process pending user input BEFORE rendering messages to avoid being "one message behind"
+# FIX: removed form-based submission (which caused ordering issues)
+#      and replaced it with a direct send button using a callback so
+#      messages appear immediately (no "one-behind" behaviour).
 # ---------------------------------------------------
 
 # ---------- PAGE CONFIG ----------
@@ -32,9 +33,8 @@ if "processing" not in st.session_state:
 if "play_request" not in st.session_state:
     # Holds message id that the user requested to play
     st.session_state.play_request = None
-if "pending_input" not in st.session_state:
-    # Temporary storage for newly submitted user input so we can process it before rendering
-    st.session_state.pending_input = None
+if "user_input" not in st.session_state:
+    st.session_state.user_input = ""
 
 # ---------- HELPER: TTS -> base64 ----------
 def generate_audio_base64(text: str) -> str:
@@ -53,6 +53,8 @@ def process_message(user_message: str):
     """
     Send user message to backend, receive bot response and store it in session state.
     No audio is generated at this point.
+    This function is safe to call from a button callback so the message appears
+    immediately after clicking "Send".
     """
     if not user_message.strip() or st.session_state.processing:
         return
@@ -66,7 +68,7 @@ def process_message(user_message: str):
         "content": user_message.strip()
     })
 
-    # Call backend
+    # Call backend (this may take time)
     bot_response = "❌ Error: no response"
     try:
         response = requests.post(
@@ -97,6 +99,20 @@ def process_message(user_message: str):
 
     st.session_state.processing = False
 
+# ---------- SEND CALLBACK (attached to Send button) ----------
+def send_callback():
+    """Callback executed when Send button is clicked.
+    It reads st.session_state.user_input, calls process_message and clears the input.
+    The callback runs on the server immediately, so the new message is appended
+    before the script continues and the UI re-renders (fixes the "one-behind" bug).
+    """
+    text = st.session_state.get("user_input", "").strip()
+    if not text:
+        return
+    process_message(text)
+    # clear input so the text box is empty after sending
+    st.session_state.user_input = ""
+
 # ---------- UI: Header and CSS ----------
 st.markdown("""
 <style>
@@ -109,6 +125,8 @@ st.markdown("""
     .chat-bubble-bot { background: #fff3e0; padding: 0.7rem 1rem; border-radius: 16px; margin: 0.4rem 0; max-width: 80%; align-self: flex-start; margin-right: auto; }
     .small-note { color: #666; font-size: 0.9rem; }
     .play-button { border: none; background: transparent; cursor: pointer; font-size: 1.1rem; }
+    .input-row { display:flex; gap:8px; align-items:center; }
+    .send-btn { padding:8px 12px; border-radius:8px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -120,35 +138,29 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ---------- If there is pending input from the form, process it BEFORE rendering messages ----------
-if st.session_state.pending_input and not st.session_state.processing:
-    pending = st.session_state.pending_input
-    # clear it first to avoid loops if process_message triggers reruns
-    st.session_state.pending_input = None
-    process_message(pending)
-
 # ---------- WELCOME ----------
 if not st.session_state.messages:
-    st.markdown("""### 🎭 Benvingut a la Festa de Sants! 
-Pregunta'm qualsevol cosa sobre la festa major del barri.""")
+    st.markdown("### 🎭 Benvingut a la Festa de Sants! ")
+    st.markdown("Pregunta'm qualsevol cosa sobre la festa major del barri.")
 
 # ---------- Render chat messages ----------
-# We render messages first. Each bot message shows a small speaker icon button that the user can press to request audio generation.
 for i, msg in enumerate(st.session_state.messages):
     if msg["role"] == "user":
         # user bubble
         st.markdown(f"<div class='chat-bubble-user'>🧑 {html.escape(msg['content'])}</div>", unsafe_allow_html=True)
     else:
-        # bot bubble (text) + speaker icon
+        # bot bubble (text) + speaker icon column
         cols = st.columns([0.95, 0.05])
         with cols[0]:
             st.markdown(f"<div class='chat-bubble-bot'>🤖 {html.escape(msg['content'])}</div>", unsafe_allow_html=True)
         with cols[1]:
-            # show a speaker/logo button — when pressed, store the play request in session_state
-            btn_key = f"play_{msg['id']}"
-            if st.button("🔊", key=btn_key, help="Click to synthesize and play this message"):
-                # store the id to be processed after render (so that the click doesn't disrupt layout)
-                st.session_state.play_request = msg['id']
+            # show a speaker/logo button — when pressed set play_request via callback
+            def make_on_click(mid=msg['id']):
+                def _cb():
+                    st.session_state.play_request = mid
+                return _cb
+
+            st.button("🔊", key=f"play_{msg['id']}", help="Click to synthesize and play this message", on_click=make_on_click())
 
 # ---------- If user requested to play a message, generate audio and render player ----------
 if st.session_state.play_request:
@@ -164,17 +176,21 @@ if st.session_state.play_request:
         st.warning("Requested message not found.")
         st.session_state.play_request = None
     else:
-        # show a small server-side indicator while generating
-        with st.spinner('Generating audio...'):
-            try:
-                sanitized = target['content'].replace('*', '').replace('#', '')
-                audio_b64 = generate_audio_base64(sanitized)
-                # save audio to the message so next time we can play without re-generating
-                target['audio_b64'] = audio_b64
-            except Exception as e:
-                st.error(f"TTS generation failed: {e}")
-                st.session_state.play_request = None
-                audio_b64 = None
+        # If audio already generated, reuse it
+        if target.get('audio_b64'):
+            audio_b64 = target['audio_b64']
+        else:
+            # show a small server-side indicator while generating
+            with st.spinner('Generating audio...'):
+                try:
+                    sanitized = target['content'].replace('*', '').replace('#', '')
+                    audio_b64 = generate_audio_base64(sanitized)
+                    # save audio to the message so next time we can play without re-generating
+                    target['audio_b64'] = audio_b64
+                except Exception as e:
+                    st.error(f"TTS generation failed: {e}")
+                    st.session_state.play_request = None
+                    audio_b64 = None
 
         if audio_b64:
             # render an iframe that autoplay plays audio and shows "Sto leggendo..." while playing
@@ -210,18 +226,16 @@ if st.session_state.play_request:
             # clear play_request so it doesn't re-run again automatically
             st.session_state.play_request = None
 
-# ---------- INPUT FORM ----------
-with st.form(key="chat_form", clear_on_submit=True):
-    cols = st.columns([4,1])
-    with cols[0]:
-        user_input = st.text_input("Escriu el teu missatge...", "")
-    with cols[1]:
-        submitted = st.form_submit_button("📨 Envia", type="primary")
-
-    if submitted and user_input.strip():
-        # store the user input in session_state so it gets processed BEFORE rendering on the next run
-        st.session_state.pending_input = user_input
-        # do NOT call process_message here (that would make the message appear on the following rerun)
+# ---------- INPUT ROW (no form) ----------
+st.markdown("""
+<div class='input-row'>
+""", unsafe_allow_html=True)
+cols = st.columns([4,1])
+with cols[0]:
+    st.text_input("Escriu el teu missatge...", key="user_input", placeholder="Escriu... i premi Envia")
+with cols[1]:
+    st.button("📨 Envia", key="send_button", on_click=send_callback, args=())
+st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------- RESET BUTTON ----------
 if st.button("🔄 Reiniciar conversa"):
@@ -233,7 +247,7 @@ if st.button("🔄 Reiniciar conversa"):
     st.session_state.messages = []
     st.session_state.conversation_id = None
     st.session_state.play_request = None
-    st.session_state.pending_input = None
+    st.session_state.user_input = ""
     st.experimental_rerun()
 
 # ---------- PROCESSING INDICATOR ----------
