@@ -11,7 +11,8 @@ from app.core import (
     generate_response, 
     SYSTEM_PROMPT, 
     SYSTEM_PROMPT_PROGRAMA, 
-    SYSTEM_PROMPT_CARRERS
+    SYSTEM_PROMPT_CARRERS,
+    SYSTEM_PROMPT_TOTPROGR
 )
 
 # Inizializza il client Groq qui per la classificazione
@@ -94,6 +95,8 @@ async def chat_endpoint(req: Request):
             system_prompt = SYSTEM_PROMPT_PROGRAMA
         elif category == 'carrers':
             system_prompt = SYSTEM_PROMPT_CARRERS
+        elif category == 'programatot':
+            system_prompt = SYSTEM_PROMPT_TOTPROGR
         else:
             system_prompt = SYSTEM_PROMPT
         
