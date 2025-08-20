@@ -118,8 +118,8 @@ st.markdown("""
 
 # ---------- WELCOME ----------
 if not st.session_state.messages:
-    st.markdown("### 🎭 Benvingut a la Festa de Sants! 
-Pregunta'm qualsevol cosa sobre la festa major del barri.")
+    st.markdown("""### 🎭 Benvingut a la Festa de Sants! 
+Pregunta'm qualsevol cosa sobre la festa major del barri.""")
 
 # ---------- Render chat messages ----------
 # We render messages first. Each bot message shows a small speaker icon button that the user can press to request audio generation.
