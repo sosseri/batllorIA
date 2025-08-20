@@ -139,7 +139,7 @@ st.markdown("""
 if not st.session_state.messages:
     st.markdown("### 🎭 Benvingut a la Festa de Sants! ")
     st.markdown("Pregunta'm qualsevol cosa sobre la festa major del barri.")
-    st.markdown("<small>La primera interacció pot trigar fins a 1 minut…</small>", unsafe_allow_html=True)
+    st.markdown("<small>❗La primera interacció pot trigar fins a 1 minut❗️</small>", unsafe_allow_html=True)
 
 # ---------- Render chat messages ----------
 for i, msg in enumerate(st.session_state.messages):
@@ -272,9 +272,10 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+st.markdown(✄┈┈┈┈)
 st.markdown(
-    "<small>🤖 Aquesta és una intel·ligència artificial feta per la Festa Major de Sants. "
-    "Pot dir coses errònies o inventades i no ens fem responsables de les respostes. "
-    "Pren-t’ho amb esperit festiu i, si tens dubtes seriosos, pregunta a la comissió! 🎉</small>",
+    "<small>🤖 Aquesta és una intel·ligència artificial feta per la Festa Major de Sants. 🎉"
+    "🕵️ Pot generar informació incorrecta i no ens fem responsables de l’ús inadequat que en puguin fer adults massa esverats o criatures 🎈.
+    "🍻 Pren-t’ho amb esperit festiu 🍻 i, si tens dubtes seriosos, pregunta a la comissió! 🎉</small>",
     unsafe_allow_html=True
 )
