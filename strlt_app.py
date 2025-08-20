@@ -124,6 +124,8 @@ def play_audio(text: str):
         </audio>
         """
         components.html(audio_html, height=0)
+        pause_duration = len(user_input.split()) * 0.5
+        time.sleep(pause_duration)
     except Exception as e:
         st.warning(f"No s'ha pogut reproduir l'àudio: {e}")
 
@@ -188,8 +190,6 @@ with st.form(key="chat_form", clear_on_submit=True):
     
     if submitted and user_input.strip():
         process_message(user_input)
-        pause_duration = len(user_input.split()) * (0.5/(np.mean([len(x) for x in user_input.split()]))*5)
-        time.sleep(pause_duration)
         st.rerun()
 
 
