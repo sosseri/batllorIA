@@ -193,15 +193,15 @@ if st.session_state.play_request:
                     audio_b64 = None
 
         if audio_b64:
-            # render an iframe that autoplay plays audio and shows "Sto leggendo..." while playing
+            # render an iframe that autoplay plays audio and shows "Llegint..." while playing
             audio_element_id = f"audio_{target['id']}"
             status_id = f"status_{target['id']}"
             player_html = f"""
             <div style='display:flex; align-items:center; gap:12px;'>
                 <div style='font-size:1.4rem;'>🔊</div>
                 <div>
-                    <div style='font-size:0.95rem; color:#333'>Playing message</div>
-                    <div id='{status_id}' style='color:#666; font-size:0.9rem; display:none;'>Sto leggendo...</div>
+                    <div style='font-size:0.95rem; color:#333'> </div>
+                    <div id='{status_id}' style='color:#666; font-size:0.9rem; display:none;'>Llegint...</div>
                     <audio id='{audio_element_id}' autoplay>
                         <source src='data:audio/mp3;base64,{audio_b64}' type='audio/mp3'>
                         Your browser does not support the audio element.
