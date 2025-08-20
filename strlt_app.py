@@ -28,7 +28,14 @@ def reset_conversation():
 
 
 # ---------- PAGE CONFIG ----------
-st.set_page_config(page_title="Xat amb BatllorIA", page_icon="💬", layout="centered")
+st.set_page_config(
+    page_title="Xat amb BatllorIA",
+    page_icon="💬",
+    layout="centered",
+    initial_sidebar_state="auto",
+    theme="light"  # 👈 force the light mode
+)
+
 
 # ---------- SESSION STATE INIT ----------
 if "messages" not in st.session_state:
