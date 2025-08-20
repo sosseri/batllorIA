@@ -3,259 +3,123 @@ import requests
 from gtts import gTTS
 from io import BytesIO
 import base64
-import re
-import streamlit.components.v1 as components
-import uuid
-import html
+import reimport streamlit as st
 import requests
-
-# -------------------------------
-# Reset function (safe callback)
-# -------------------------------
-def reset_conversation():
-    conv_id = st.session_state.get("conversation_id")
-    if conv_id:
-        try:
-            requests.delete(f"https://batllori-chat.onrender.com/conversations/{conv_id}", timeout=5)
-        except Exception:
-            pass
-
-    st.session_state["messages"] = []
-    st.session_state["conversation_id"] = None
-    st.session_state["processing"] = False
-    st.session_state["user_input"] = ""
-    st.rerun()
-
+from gtts import gTTS
+from io import BytesIO
+import base64
+import uuid
+import time
+import re
 
 # ---------- PAGE CONFIG ----------
 st.set_page_config(page_title="Xat amb BatllorIA", page_icon="💬", layout="centered")
 
-# ---------- SESSION STATE INIT ----------
+# ---------- INIT STATE ----------
 if "messages" not in st.session_state:
-    st.session_state.messages = []
-if "conversation_id" not in st.session_state:
-    st.session_state.conversation_id = None
-if "processing" not in st.session_state:
-    st.session_state.processing = False
-if "play_request" not in st.session_state:
-    st.session_state.play_request = None
-if "user_input" not in st.session_state:
-    st.session_state.user_input = ""
+    st.session_state["messages"] = []
 
-# ---------- HELPER: TTS -> base64 ----------
-def generate_audio_base64(text: str) -> str:
-    tts = gTTS(text=text, lang='ca')
-    buf = BytesIO()
-    tts.write_to_fp(buf)
-    buf.seek(0)
-    return base64.b64encode(buf.read()).decode()
-
-# ---------- PROCESS MESSAGE ----------
-def process_message(user_message: str):
-    if not user_message.strip() or st.session_state.processing:
-        return
-
-    st.session_state.processing = True
-
-    st.session_state.messages.append({
-        "id": uuid.uuid4().hex,
-        "role": "user",
-        "content": user_message.strip()
-    })
-
-    bot_response = "❌ Error: no response"
-    try:
-        response = requests.post(
-            "https://batllori-chat.onrender.com/chat",
-            json={
-                "message": user_message.strip(),
-                "conversation_id": st.session_state.conversation_id
-            },
-            timeout=60
-        )
-        data = response.json()
-        bot_response = data.get("response", "❌ Error de connexió")
-        st.session_state.conversation_id = data.get("conversation_id")
-        bot_response = re.sub(r"<think.*?>.*?</Thinking>", "", bot_response, flags=re.DOTALL | re.IGNORECASE)
-    except Exception as e:
-        bot_response = f"❌ Error: {str(e)}"
-
-    st.session_state.messages.append({
-        "id": uuid.uuid4().hex,
-        "role": "bot",
-        "content": bot_response,
-        "audio_b64": None
-    })
-
-    st.session_state.processing = False
-
-# ---------- SEND CALLBACK ----------
-def send_callback(text=None):
-    if text is None:
-        text = st.session_state.get("user_input", "").strip()
-    if not text:
-        return
-    process_message(text)
-    st.session_state.user_input = ""
-
-# ---------- UI: Header and CSS ----------
+# ---------- STYLES ----------
 st.markdown("""
-<style>
-    body { background-color: #fafafa; font-family: 'Helvetica Neue', sans-serif; }
-    .main-header { background: url('https://upload.wikimedia.org/wikipedia/commons/0/0c/Azulejo_pattern.svg'); background-size: cover; background-position: center; border-radius: 16px; padding: 2rem; text-align: center; color: #222; margin-bottom: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    .main-header h1 { margin: 0; font-size: 1.8rem; }
-    .main-header h2 { margin-top: 0.5rem; font-weight: 400; color: #444; }
-    .badge { display: inline-block; margin-top: 0.8rem; padding: 0.3rem 0.8rem; background: #ffeed9; color: #d35400; border-radius: 12px; font-size: 0.9rem; font-weight: 600; }
-    .chat-bubble-user { background: #e1f5fe; padding: 0.7rem 1rem; border-radius: 16px; margin: 0.4rem 0; max-width: 80%; align-self: flex-end; margin-left: auto; }
-    .chat-bubble-bot { background: #fff3e0; padding: 0.7rem 1rem 1.8rem 1rem; border-radius: 16px; margin: 0.4rem 0; max-width: 80%; align-self: flex-start; margin-right: auto; position: relative; }
-    .bot-audio-btn { position: absolute; bottom: 6px; right: 10px; border: none; background: transparent; cursor: pointer; font-size: 1.2rem; }
-    .suggestions { margin-top:1rem; display:flex; flex-wrap:wrap; gap:8px; }
-    .suggestions button { background:#eee; border:none; border-radius:12px; padding:6px 12px; cursor:pointer; font-size:0.9rem; }
-    .suggestions button:hover { background:#ddd; }
-</style>
+    <style>
+        .message-container {
+            background: #faf7f2;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: relative;
+        }
+        .bot {
+            border-left: 4px solid #c07d62;
+        }
+        .user {
+            border-left: 4px solid #6c757d;
+            text-align: right;
+        }
+        .reading-icon {
+            position: absolute;
+            bottom: 0.5rem;
+            right: 0.8rem;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        .suggestions {
+            margin-top: 2rem;
+        }
+        .suggestion-btn {
+            display: inline-block;
+            margin: 0.2rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 999px;
+            border: 1px solid #c07d62;
+            background: #fff;
+            font-size: 0.85rem;
+            color: #c07d62;
+            cursor: pointer;
+        }
+        .suggestion-btn:hover {
+            background: #c07d62;
+            color: white;
+        }
+    </style>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-<div class="main-header">
-    <h1>💬 Xat amb BatllorIA</h1>
-    <h2>L'Intelligència Artificial de la família Batllori</h2>
-    <div class="badge">🎉 Festa Major de Sants 2025 🎉</div>
-</div>
-""", unsafe_allow_html=True)
+# ---------- FUNCTIONS ----------
+def text_to_speech(text):
+    tts = gTTS(text=text, lang="ca")
+    fp = BytesIO()
+    tts.write_to_fp(fp)
+    fp.seek(0)
+    b64 = base64.b64encode(fp.read()).decode()
+    return f'<audio autoplay src="data:audio/mp3;base64,{b64}"></audio>'
 
-# ---------- WELCOME + Suggestions ----------
-if not st.session_state.messages:
-    st.markdown("### 🎭 Benvingut a la Festa de Sants! ")
-    st.markdown("Pregunta'm qualsevol cosa sobre la festa major del barri.")
-    st.markdown("<div class='suggestions'>", unsafe_allow_html=True)
+def query_bot(prompt):
+    # Replace with your backend call
+    time.sleep(1.2)  # simulate thinking
+    return f"Resposta simulada per: {prompt}"
 
-    suggestions = [
-        "Quin és el tema del carrer Papin?",
-        "Qui és la família Batllori?",
-        "Quins són els altres carrers de la festa?",
-        "Què hi ha avui al carrer Papin?",
-        "Què hi ha demà al carrer Papin?"
-    ]
-
-    cols = st.columns(len(suggestions))
-    for i, s in enumerate(suggestions):
-        with cols[i]:
-            if st.button(s, key=f"sugg_{i}"):
-                send_callback(s)
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# ---------- Render chat messages ----------
-for i, msg in enumerate(st.session_state.messages):
-    if msg["role"] == "user":
-        st.markdown(f"<div class='chat-bubble-user'>🧑 {html.escape(msg['content'])}</div>", unsafe_allow_html=True)
-    else:
+# ---------- DISPLAY MESSAGES ----------
+for msg in st.session_state["messages"]:
+    role, text = msg["role"], msg["content"]
+    with st.container():
         st.markdown(
-            f"<div class='chat-bubble-bot'>🤖 {html.escape(msg['content'])}"
-            f"<button class='bot-audio-btn' onclick=\"fetch('/?play={msg['id']}')\">🔊</button>"
+            f"<div class='message-container {role}'>"
+            f"{text}"
+            f"<span class='reading-icon' onclick=\"navigator.clipboard.writeText('{text}'); "
+            f"var audio = document.createElement('audio'); "
+            f"audio.src='/read/{uuid.uuid4()}';\">🔊</span>"
             f"</div>",
             unsafe_allow_html=True
         )
-        # Real button for audio (server-side action)
-        def make_on_click(mid=msg['id']):
-            def _cb():
-                st.session_state.play_request = mid
-            return _cb
-        st.button(" ", key=f"hidden_play_{msg['id']}", on_click=make_on_click(), help="", args=(), kwargs={})
 
-# ---------- If user requested to play a message ----------
-if st.session_state.play_request:
-    play_id = st.session_state.play_request
-    target = None
-    for m in st.session_state.messages:
-        if m['id'] == play_id and m['role'] == 'bot':
-            target = m
-            break
+# ---------- USER INPUT ----------
+prompt = st.text_input("Escriu la teva pregunta...", key="input")
+if st.button("Enviar") and prompt:
+    # add user message
+    st.session_state["messages"].append({"role": "user", "content": prompt})
+    # get bot response
+    response = query_bot(prompt)
+    # add bot message
+    st.session_state["messages"].append({"role": "bot", "content": response})
+    st.rerun()
 
-    if target:
-        if target.get('audio_b64'):
-            audio_b64 = target['audio_b64']
-        else:
-            with st.spinner('Generating audio...'):
-                try:
-                    sanitized = target['content'].replace('*', '').replace('#', '')
-                    audio_b64 = generate_audio_base64(sanitized)
-                    target['audio_b64'] = audio_b64
-                except Exception as e:
-                    st.error(f"TTS generation failed: {e}")
-                    st.session_state.play_request = None
-                    audio_b64 = None
-
-        if audio_b64:
-            audio_element_id = f"audio_{target['id']}"
-            status_id = f"status_{target['id']}"
-            player_html = f"""
-            <div style='display:flex; align-items:center; gap:12px;'>
-                <div style='font-size:1.4rem;'>🔊</div>
-                <div>
-                    <div style='font-size:0.95rem; color:#333'> </div>
-                    <div id='{status_id}' style='color:#666; font-size:0.9rem; display:none;'>Llegint...</div>
-                    <audio id='{audio_element_id}' autoplay>
-                        <source src='data:audio/mp3;base64,{audio_b64}' type='audio/mp3'>
-                        Your browser does not support the audio element.
-                    </audio>
-                </div>
-            </div>
-            <script>
-            (function() {{
-                const audio = document.getElementById('{audio_element_id}');
-                const status = document.getElementById('{status_id}');
-                function show() {{ status.style.display = 'block'; }}
-                function hide() {{ status.style.display = 'none'; }}
-                audio.addEventListener('play', function() {{ show(); }});
-                audio.addEventListener('ended', function() {{ hide(); }});
-                audio.addEventListener('pause', function() {{ hide(); }});
-                setTimeout(()=>{{ show(); }}, 50);
-            }})();
-            </script>
-            """
-            components.html(player_html, height=120)
-            st.session_state.play_request = None
-
-# ---------- INPUT ROW ----------
-st.markdown("<div class='input-row'>", unsafe_allow_html=True)
-cols = st.columns([4,1])
-with cols[0]:
-    st.text_input("Escriu el teu missatge...", key="user_input", placeholder="Escriu... i premi Envia")
-with cols[1]:
-    st.button("📨 Envia", key="send_button", on_click=send_callback)
+# ---------- SUGGESTED QUESTIONS ----------
+st.markdown("<div class='suggestions'>", unsafe_allow_html=True)
+st.write("💡 Preguntes suggerides:")
+suggestions = [
+    "Quin és el tema del carrer Papin?",
+    "Qui és la família Batllori?",
+    "Quines són les altres vies de la festa?",
+    "Què hi ha avui al carrer Papin?",
+    "Què hi ha demà al carrer Papin?"
+]
+cols = st.columns(len(suggestions))
+for i, sug in enumerate(suggestions):
+    if cols[i].button(sug, key=f"sug_{i}"):
+        st.session_state["input"] = sug
+        st.rerun()
 st.markdown("</div>", unsafe_allow_html=True)
 
-if st.button("🔄 Reiniciar conversa", on_click=reset_conversation):
-    pass
-
-# ---------- PROCESSING INDICATOR ----------
-if st.session_state.processing:
-    st.markdown("""
-    <div style="display:flex; align-items:center; gap:8px; font-size:1rem; color:#444;">
-        <span>🤖 Processant la pregunta</span>
-        <span class="dot-anim">.</span>
-        <span class="dot-anim">.</span>
-        <span class="dot-anim">.</span>
-    </div>
-    <style>
-    @keyframes blink {
-        0% { opacity: 0.2; }
-        20% { opacity: 1; }
-        100% { opacity: 0.2; }
-    }
-    .dot-anim {
-        animation: blink 1.4s infinite both;
-        font-weight: bold;
-    }
-    .dot-anim:nth-child(2) { animation-delay: 0.2s; }
-    .dot-anim:nth-child(3) { animation-delay: 0.4s; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# ---------- Footer note ----------
-st.markdown(
-    "<div class='footer-note'>Clica l'altaveu per llegir les respostes. "
-    "ℹ️ La primera resposta pot trigar fins a <b>1 minut</b>.</div>",
-    unsafe_allow_html=True,
-)
+# ---------- FOOTNOTE ----------
+st.markdown("<p style='font-size:0.8rem; color:gray;'>* Aquest xat és una prova inspirada en la ceràmica</p>", unsafe_allow_html=True)
