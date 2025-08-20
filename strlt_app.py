@@ -141,13 +141,6 @@ st.markdown("""
         backdrop-filter: blur(10px);
     }
     
-    .chat-container {
-        max-height: 500px;
-        overflow-y: auto;
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    
     .message-wrapper {
         display: flex;
         margin: 1rem 0;
@@ -161,6 +154,7 @@ st.markdown("""
     
     .message-wrapper.bot {
         justify-content: flex-start;
+        position: relative;
     }
     
     .chat-bubble-user { 
@@ -185,21 +179,35 @@ st.markdown("""
         font-size: 0.95rem;
         line-height: 1.4;
         position: relative;
+        margin-bottom: 2.5rem;
+    }
+    
+    .bot-message-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        max-width: 80%;
+    }
+    
+    .audio-button-container {
+        position: absolute;
+        bottom: -35px;
+        right: 10px;
     }
     
     .audio-button {
         background: #f7fafc;
         border: 1px solid #e2e8f0;
         border-radius: 50%;
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         transition: all 0.2s ease;
-        font-size: 0.9rem;
-        margin-top: 0.5rem;
+        font-size: 0.85rem;
         flex-shrink: 0;
     }
     
@@ -382,24 +390,36 @@ for i, msg in enumerate(st.session_state.messages):
         </div>
         """, unsafe_allow_html=True)
     else:
-        # Bot message with inline audio button
-        cols = st.columns([0.9, 0.1])
-        with cols[0]:
-            st.markdown(f"""
-            <div class='message-wrapper bot'>
+        # Bot message with positioned audio button
+        st.markdown(f"""
+        <div class='message-wrapper bot'>
+            <div class='bot-message-container'>
                 <div class='chat-bubble-bot'>🤖 {html.escape(msg['content'])}</div>
             </div>
-            """, unsafe_allow_html=True)
-        with cols[1]:
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Audio button positioned at bottom-right of the message
+        cols = st.columns([1])
+        with cols[0]:
             def make_on_click(mid=msg['id']):
                 def _cb():
                     st.session_state.play_request = mid
                 return _cb
-            st.button("🔊", 
-                     key=f"audio_{msg['id']}", 
-                     help="Escolta aquest missatge", 
-                     on_click=make_on_click(),
-                     use_container_width=True)
+            
+            # Use custom styling for positioning
+            st.markdown(f"""
+            <div style='display: flex; justify-content: flex-start; margin-top: -40px; margin-left: calc(75% - 35px); margin-bottom: 20px;'>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            audio_cols = st.columns([10, 1])
+            with audio_cols[1]:
+                st.button("🔊", 
+                         key=f"audio_{msg['id']}", 
+                         help="Escolta aquest missatge", 
+                         on_click=make_on_click(),
+                         use_container_width=True)
 
 # ---------- If user requested to play a message ----------
 if st.session_state.play_request:
