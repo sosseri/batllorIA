@@ -101,7 +101,6 @@ def send_callback():
 def send_suggested(q: str):
     process_message(q)
 
-
 # ---------- UI: Header and CSS ----------
 st.markdown("""
 <style>
@@ -150,7 +149,6 @@ if not st.session_state.messages:
     st.markdown("### 🎭 Benvingut a la Festa de Sants! ")
     st.markdown("Pregunta'm qualsevol cosa sobre la festa major del barri.")
 
-
 # ---------- Render chat messages ----------
 for i, msg in enumerate(st.session_state.messages):
     if msg["role"] == "user":
@@ -196,53 +194,91 @@ cols = st.columns([4,1])
 with cols[0]:
     st.text_input("Escriu el teu missatge...", key="user_input", placeholder="Escriu... i premi Envia")
 with cols[1]:
-    st.button("📨 Envia", key="send_button", on_click=send_callback, args=())
+    st.button("📨 Envia", key="send_button", on_click=send_callback)
 st.markdown("</div>", unsafe_allow_html=True)
+
+# ---------- If user requested to play a message ----------
+if st.session_state.play_request:
+    play_id = st.session_state.play_request
+    target = None
+    for m in st.session_state.messages:
+        if m['id'] == play_id and m['role'] == 'bot':
+            target = m
+            break
+
+    if target is None:
+        st.warning("Requested message not found.")
+        st.session_state.play_request = None
+    else:
+        if target.get('audio_b64'):
+            audio_b64 = target['audio_b64']
+        else:
+            with st.spinner('Generating audio...'):
+                try:
+                    sanitized = target['content'].replace('*', '').replace('#', '')
+                    audio_b64 = generate_audio_base64(sanitized)
+                    target['audio_b64'] = audio_b64
+                except Exception as e:
+                    st.error(f"TTS generation failed: {e}")
+                    st.session_state.play_request = None
+                    audio_b64 = None
+
+        if audio_b64:
+            audio_element_id = f"audio_{target['id']}"
+            status_id = f"status_{target['id']}"
+            player_html = f"""
+            <div style='display:flex; align-items:center; gap:12px;'>
+                <div style='font-size:1.4rem;'>🔊</div>
+                <div>
+                    <div style='font-size:0.95rem; color:#333'>Reproduint missatge...</div>
+                    <div id='{status_id}' style='color:#666; font-size:0.9rem; display:none;'>Llegint...</div>
+                    <audio id='{audio_element_id}' autoplay>
+                        <source src='data:audio/mp3;base64,{audio_b64}' type='audio/mp3'>
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+            </div>
+            <script>
+            (function() {{
+                const audio = document.getElementById('{audio_element_id}');
+                const status = document.getElementById('{status_id}');
+                function show() {{ status.style.display = 'block'; }}
+                function hide() {{ status.style.display = 'none'; }}
+                if (audio) {{
+                    audio.addEventListener('play', function() {{ show(); }});
+                    audio.addEventListener('ended', function() {{ hide(); }});
+                    audio.addEventListener('pause', function() {{ hide(); }});
+                    setTimeout(()=>{{ show(); }}, 50);
+                }}
+            }})();
+            </script>
+            """
+            components.html(player_html, height=120)
+            st.session_state.play_request = None
 
 # ---------- Suggested questions (only before first message) ----------
 if not st.session_state.messages:
     st.markdown("""
     <div class='suggestions-container'>
         <div class='suggestions-title'>💡 Preguntes suggerides:</div>
-        <div class='suggestions-grid'>
     """, unsafe_allow_html=True)
     
     suggestions = [
-        "Quin és el tema del carrer Papin?",
+        "Quin és el tema de la decoraciò del carrer Papin?",
         "Qui és la família Batllori?",
         "Quines són les altres vies de la festa?",
         "Què hi ha avui al carrer Papin?",
         "Què hi ha demà al carrer Papin?",
     ]
     
+    # Create columns for better layout
+    cols = st.columns(2)
     for i, q in enumerate(suggestions):
-        st.markdown(f"""
-        <div class='suggestion-card' onclick='sendSuggestion("{q}")'>
-            {html.escape(q)}
-        </div>
-        """, unsafe_allow_html=True)
-        # Hidden button for functionality
-        st.button("", key=f"sugg_{i}", on_click=send_suggested, args=(q,), label_visibility="hidden")
+        with cols[i % 2]:
+            if st.button(q, key=f"sugg_{i}", use_container_width=True):
+                send_suggested(q)
     
-    st.markdown("</div></div>", unsafe_allow_html=True)
-    
-    # JavaScript for suggestion clicks
-    st.markdown("""
-    <script>
-    function sendSuggestion(question) {
-        // Find the corresponding hidden button and click it
-        const buttons = document.querySelectorAll('button[kind="secondary"]');
-        for (let btn of buttons) {
-            const testId = btn.getAttribute('data-testid');
-            if (testId && testId.includes('sugg_')) {
-                // Check if this is the right button by looking for the question text
-                btn.click();
-                break;
-            }
-        }
-    }
-    </script>
-    """, unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 if st.button("🔄 Reiniciar conversa", on_click=reset_conversation):
     pass
@@ -260,7 +296,6 @@ if st.session_state.processing:
         <div class='waiting-info'>Pot trigar fins a 2 minuts en la primera consulta</div>
     </div>
     """, unsafe_allow_html=True)
-
 
 # ---------- Footer note ----------
 st.markdown(
