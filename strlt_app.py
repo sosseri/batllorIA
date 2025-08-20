@@ -32,8 +32,7 @@ st.set_page_config(
     page_title="Xat amb BatllorIA",
     page_icon="💬",
     layout="centered",
-    initial_sidebar_state="auto",
-    theme="light"  # 👈 force the light mode
+    initial_sidebar_state="auto"
 )
 
 
