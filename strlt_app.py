@@ -149,6 +149,8 @@ def process_message(user_message: str):
         st.session_state.conversation_id = data.get("conversation_id")
 
         bot_response = re.sub(r"<think.*?>.*?</Thinking>", "", bot_response, flags=re.DOTALL | re.IGNORECASE)
+        # remove bold and markdown
+        bot_response = bot_response.replace("*", "").replace("#", "")
     except Exception as e:
         bot_response = f"❌ Error: {str(e)}"
     
@@ -164,7 +166,10 @@ def process_message(user_message: str):
     time.sleep(0.5)
 
     # 4. Now play audio
-    play_audio(bot_response.replace("*", "").replace("#", ""))
+    play_audio(bot_response)
+    # pause before rerun
+    pause_duration = len(bot_response.split()) * 0.475
+    time.sleep(pause_duration)
     
 # ---------- WELCOME ----------
 if not st.session_state.messages:
@@ -187,9 +192,6 @@ with st.form(key="chat_form", clear_on_submit=True):
     
     if submitted and user_input.strip():
         process_message(user_input)
-        # pause before rerun
-        pause_duration = len(user_input.split()) * 4.75
-        time.sleep(pause_duration)
         st.rerun()
 
 
