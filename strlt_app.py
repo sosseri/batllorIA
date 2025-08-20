@@ -71,7 +71,7 @@ def process_message(user_message: str):
                 "message": user_message.strip(),
                 "conversation_id": st.session_state.conversation_id
             },
-            timeout=60  # wait up to 1 minute
+            timeout=120  # wait up to 2 minutes
         )
         data = response.json()
         bot_response = data.get("response", "❌ Error de connexió")
@@ -133,6 +133,7 @@ st.markdown("""
 if not st.session_state.messages:
     st.markdown("### 🎭 Benvingut a la Festa de Sants! ")
     st.markdown("Pregunta'm qualsevol cosa sobre la festa major del barri.")
+    st.markdown("<small>La primera interacció pot trigar fins a 1 minut…</small>", unsafe_allow_html=True)
 
 # ---------- Render chat messages ----------
 for i, msg in enumerate(st.session_state.messages):
