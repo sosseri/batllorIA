@@ -3,122 +3,148 @@ import requests
 from gtts import gTTS
 from io import BytesIO
 import base64
-import requests
-from gtts import gTTS
-from io import BytesIO
-import base64
+import re
 import uuid
 import time
-import re
 
 # ---------- PAGE CONFIG ----------
 st.set_page_config(page_title="Xat amb BatllorIA", page_icon="💬", layout="centered")
 
 # ---------- INIT STATE ----------
 if "messages" not in st.session_state:
-    st.session_state["messages"] = []
+    st.session_state.messages = []
 
 # ---------- STYLES ----------
-st.markdown("""
+st.markdown(
+    """
     <style>
-        .message-container {
-            background: #faf7f2;
-            border-radius: 1rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            position: relative;
-        }
-        .bot {
-            border-left: 4px solid #c07d62;
-        }
-        .user {
-            border-left: 4px solid #6c757d;
-            text-align: right;
-        }
-        .reading-icon {
-            position: absolute;
-            bottom: 0.5rem;
-            right: 0.8rem;
-            cursor: pointer;
-            font-size: 1.2rem;
-        }
-        .suggestions {
-            margin-top: 2rem;
-        }
-        .suggestion-btn {
-            display: inline-block;
-            margin: 0.2rem;
-            padding: 0.3rem 0.7rem;
-            border-radius: 999px;
-            border: 1px solid #c07d62;
-            background: #fff;
-            font-size: 0.85rem;
-            color: #c07d62;
-            cursor: pointer;
-        }
-        .suggestion-btn:hover {
-            background: #c07d62;
-            color: white;
-        }
+    .chat-bubble {
+        padding: 1rem;
+        margin: 0.5rem 0;
+        border-radius: 1rem;
+        max-width: 80%;
+        word-wrap: break-word;
+        box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+    }
+    .user-bubble {
+        background-color: #dbeafe;
+        margin-left: auto;
+    }
+    .bot-bubble {
+        background-color: #f1f5f9;
+        margin-right: auto;
+        position: relative;
+    }
+    .speak-btn {
+        position: absolute;
+        bottom: 4px;
+        right: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        color: #2563eb;
+    }
+    .suggestions {
+        margin-top: 2rem;
+        font-size: 0.9rem;
+        color: #444;
+    }
+    .suggestions button {
+        margin: 0.25rem;
+        padding: 0.3rem 0.6rem;
+        border-radius: 0.5rem;
+        border: 1px solid #ddd;
+        background: #fafafa;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
     </style>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True,
+)
+
+# ---------- HEADER ----------
+st.markdown(
+    """
+    <h1 style="text-align:center; font-family:serif; color:#6b2c2c;">
+        🎭 Xat amb BatllorIA
+    </h1>
+    <p style="text-align:center; color:#444; font-style:italic;">
+        Inspirat en les rajoles ceràmiques del carrer Papin
+    </p>
+    """,
+    unsafe_allow_html=True,
+)
 
 # ---------- FUNCTIONS ----------
-def text_to_speech(text):
-    tts = gTTS(text=text, lang="ca")
-    fp = BytesIO()
-    tts.write_to_fp(fp)
-    fp.seek(0)
-    b64 = base64.b64encode(fp.read()).decode()
-    return f'<audio autoplay src="data:audio/mp3;base64,{b64}"></audio>'
+def generate_tts(text):
+    try:
+        tts = gTTS(text=text, lang="ca")
+        audio_bytes = BytesIO()
+        tts.write_to_fp(audio_bytes)
+        audio_bytes.seek(0)
+        b64 = base64.b64encode(audio_bytes.read()).decode()
+        return f'<audio autoplay="true" src="data:audio/mp3;base64,{b64}"></audio>'
+    except Exception:
+        return None
 
-def query_bot(prompt):
-    # Replace with your backend call
-    time.sleep(1.2)  # simulate thinking
-    return f"Resposta simulada per: {prompt}"
-
-# ---------- DISPLAY MESSAGES ----------
-for msg in st.session_state["messages"]:
-    role, text = msg["role"], msg["content"]
-    with st.container():
+# ---------- CHAT UI ----------
+for i, msg in enumerate(st.session_state.messages):
+    if msg["role"] == "user":
+        st.markdown(f"<div class='chat-bubble user-bubble'>{msg['content']}</div>", unsafe_allow_html=True)
+    else:
+        bubble_id = str(uuid.uuid4())
         st.markdown(
-            f"<div class='message-container {role}'>"
-            f"{text}"
-            f"<span class='reading-icon' onclick=\"navigator.clipboard.writeText('{text}'); "
-            f"var audio = document.createElement('audio'); "
-            f"audio.src='/read/{uuid.uuid4()}';\">🔊</span>"
-            f"</div>",
-            unsafe_allow_html=True
+            f"""
+            <div class='chat-bubble bot-bubble' id='{bubble_id}'>
+                {msg['content']}
+                <span class='speak-btn' onclick="var audio=document.getElementById('audio-{bubble_id}'); if(audio){{audio.play()}}">🔊</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
+        if "audio" in msg and msg["audio"]:
+            st.markdown(f"<audio id='audio-{bubble_id}' src='{msg['audio']}'></audio>", unsafe_allow_html=True)
 
-# ---------- USER INPUT ----------
-prompt = st.text_input("Escriu la teva pregunta...", key="input")
-if st.button("Enviar") and prompt:
-    # add user message
-    st.session_state["messages"].append({"role": "user", "content": prompt})
-    # get bot response
-    response = query_bot(prompt)
-    # add bot message
-    st.session_state["messages"].append({"role": "bot", "content": response})
+# ---------- INPUT ----------
+user_input = st.chat_input("Escriu la teva pregunta...")
+if user_input:
+    st.session_state.messages.append({"role": "user", "content": user_input})
+
+    with st.spinner("Pensant..."):
+        try:
+            res = requests.post("http://backend:8000/chat", json={"message": user_input})
+            bot_response = res.json().get("response", "No he pogut respondre.")
+        except Exception as e:
+            bot_response = f"❌ Error: {str(e)}"
+
+        # Clean think blocks
+        bot_response = re.sub(r"<think.*?</Thinking>", "", bot_response, flags=re.DOTALL)
+
+    # generate TTS
+    audio_html = generate_tts(bot_response)
+
+    st.session_state.messages.append({"role": "bot", "content": bot_response, "audio": audio_html})
+
     st.rerun()
 
 # ---------- SUGGESTED QUESTIONS ----------
-st.markdown("<div class='suggestions'>", unsafe_allow_html=True)
-st.write("💡 Preguntes suggerides:")
-suggestions = [
-    "Quin és el tema del carrer Papin?",
-    "Qui és la família Batllori?",
-    "Quines són les altres vies de la festa?",
-    "Què hi ha avui al carrer Papin?",
-    "Què hi ha demà al carrer Papin?"
-]
-cols = st.columns(len(suggestions))
-for i, sug in enumerate(suggestions):
-    if cols[i].button(sug, key=f"sug_{i}"):
-        st.session_state["input"] = sug
-        st.rerun()
-st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("<div class='suggestions'><b>Preguntes suggerides:</b></div>", unsafe_allow_html=True)
 
-# ---------- FOOTNOTE ----------
-st.markdown("<p style='font-size:0.8rem; color:gray;'>* Aquest xat és una prova inspirada en la ceràmica</p>", unsafe_allow_html=True)
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("Quin és el tema del carrer Papin?"):
+        st.session_state.messages.append({"role": "user", "content": "Quin és el tema del carrer Papin?"})
+        st.rerun()
+    if st.button("Qui és la família Batllori?"):
+        st.session_state.messages.append({"role": "user", "content": "Qui és la família Batllori?"})
+        st.rerun()
+    if st.button("Quines són les altres vies de la festa?"):
+        st.session_state.messages.append({"role": "user", "content": "Quines són les altres vies de la festa?"})
+        st.rerun()
+with col2:
+    if st.button("Què hi ha avui al carrer Papin?"):
+        st.session_state.messages.append({"role": "user", "content": "Què hi ha avui al carrer Papin?"})
+        st.rerun()
+    if st.button("Què hi ha demà al carrer Papin?"):
+        st.session_state.messages.append({"role": "user", "content": "Què hi ha demà al carrer Papin?"})
+        st.rerun()
