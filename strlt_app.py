@@ -374,7 +374,6 @@ if not st.session_state.messages:
     """, unsafe_allow_html=True)
 
 # ---------- Render chat messages ----------
-st.markdown('<div class="chat-container">', unsafe_allow_html=True)
 for i, msg in enumerate(st.session_state.messages):
     if msg["role"] == "user":
         st.markdown(f"""
@@ -383,29 +382,81 @@ for i, msg in enumerate(st.session_state.messages):
         </div>
         """, unsafe_allow_html=True)
     else:
-        # Create unique key for each bot message audio button
-        audio_key = f"audio_{msg['id']}"
-        
-        st.markdown(f"""
-        <div class='message-wrapper bot'>
-            <div class='chat-bubble-bot'>🤖 {html.escape(msg['content'])}</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Audio button positioned right after the message
-        cols = st.columns([1, 10])
+        # Bot message with inline audio button
+        cols = st.columns([0.9, 0.1])
         with cols[0]:
+            st.markdown(f"""
+            <div class='message-wrapper bot'>
+                <div class='chat-bubble-bot'>🤖 {html.escape(msg['content'])}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with cols[1]:
             def make_on_click(mid=msg['id']):
                 def _cb():
                     st.session_state.play_request = mid
                 return _cb
             st.button("🔊", 
-                     key=audio_key, 
+                     key=f"audio_{msg['id']}", 
                      help="Escolta aquest missatge", 
                      on_click=make_on_click(),
                      use_container_width=True)
 
-st.markdown('</div>', unsafe_allow_html=True)
+# ---------- If user requested to play a message ----------
+if st.session_state.play_request:
+    play_id = st.session_state.play_request
+    target = None
+    for m in st.session_state.messages:
+        if m['id'] == play_id and m['role'] == 'bot':
+            target = m
+            break
+
+    if target is None:
+        st.warning("Requested message not found.")
+        st.session_state.play_request = None
+    else:
+        if target.get('audio_b64'):
+            audio_b64 = target['audio_b64']
+        else:
+            with st.spinner('Generating audio...'):
+                try:
+                    sanitized = target['content'].replace('*', '').replace('#', '')
+                    audio_b64 = generate_audio_base64(sanitized)
+                    target['audio_b64'] = audio_b64
+                except Exception as e:
+                    st.error(f"TTS generation failed: {e}")
+                    st.session_state.play_request = None
+                    audio_b64 = None
+
+        if audio_b64:
+            audio_element_id = f"audio_{target['id']}"
+            status_id = f"status_{target['id']}"
+            player_html = f"""
+            <div style='display:flex; align-items:center; gap:12px;'>
+                <div style='font-size:1.4rem;'>🔊</div>
+                <div>
+                    <div style='font-size:0.95rem; color:#333'> </div>
+                    <div id='{status_id}' style='color:#666; font-size:0.9rem; display:none;'>Llegint...</div>
+                    <audio id='{audio_element_id}' autoplay>
+                        <source src='data:audio/mp3;base64,{audio_b64}' type='audio/mp3'>
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+            </div>
+            <script>
+            (function() {{
+                const audio = document.getElementById('{audio_element_id}');
+                const status = document.getElementById('{status_id}');
+                function show() {{ status.style.display = 'block'; }}
+                function hide() {{ status.style.display = 'none'; }}
+                audio.addEventListener('play', function() {{ show(); }});
+                audio.addEventListener('ended', function() {{ hide(); }});
+                audio.addEventListener('pause', function() {{ hide(); }});
+                setTimeout(()=>{{ show(); }}, 50);
+            }})();
+            </script>
+            """
+            components.html(player_html, height=120)
+            st.session_state.play_request = None
 
 # ---------- INPUT SECTION ----------
 st.markdown('<div class="input-section">', unsafe_allow_html=True)
