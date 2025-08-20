@@ -15,6 +15,7 @@ import html
 # - A small "speaker" logo (emoji) is shown next to each bot message
 # - When pressed the server generates the MP3 and the client plays it (autoplay)
 # Comments in English throughout
+# FIX: process pending user input BEFORE rendering messages to avoid being "one message behind"
 # ---------------------------------------------------
 
 # ---------- PAGE CONFIG ----------
@@ -31,6 +32,9 @@ if "processing" not in st.session_state:
 if "play_request" not in st.session_state:
     # Holds message id that the user requested to play
     st.session_state.play_request = None
+if "pending_input" not in st.session_state:
+    # Temporary storage for newly submitted user input so we can process it before rendering
+    st.session_state.pending_input = None
 
 # ---------- HELPER: TTS -> base64 ----------
 def generate_audio_base64(text: str) -> str:
@@ -116,6 +120,13 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# ---------- If there is pending input from the form, process it BEFORE rendering messages ----------
+if st.session_state.pending_input and not st.session_state.processing:
+    pending = st.session_state.pending_input
+    # clear it first to avoid loops if process_message triggers reruns
+    st.session_state.pending_input = None
+    process_message(pending)
+
 # ---------- WELCOME ----------
 if not st.session_state.messages:
     st.markdown("""### 🎭 Benvingut a la Festa de Sants! 
@@ -136,6 +147,7 @@ for i, msg in enumerate(st.session_state.messages):
             # show a speaker/logo button — when pressed, store the play request in session_state
             btn_key = f"play_{msg['id']}"
             if st.button("🔊", key=btn_key, help="Click to synthesize and play this message"):
+                # store the id to be processed after render (so that the click doesn't disrupt layout)
                 st.session_state.play_request = msg['id']
 
 # ---------- If user requested to play a message, generate audio and render player ----------
@@ -207,9 +219,9 @@ with st.form(key="chat_form", clear_on_submit=True):
         submitted = st.form_submit_button("📨 Envia", type="primary")
 
     if submitted and user_input.strip():
-        # send message and do NOT generate audio here
-        process_message(user_input)
-        # Do not call st.rerun() here: we let Streamlit finish the normal rerun to show the new message
+        # store the user input in session_state so it gets processed BEFORE rendering on the next run
+        st.session_state.pending_input = user_input
+        # do NOT call process_message here (that would make the message appear on the following rerun)
 
 # ---------- RESET BUTTON ----------
 if st.button("🔄 Reiniciar conversa"):
@@ -221,6 +233,7 @@ if st.button("🔄 Reiniciar conversa"):
     st.session_state.messages = []
     st.session_state.conversation_id = None
     st.session_state.play_request = None
+    st.session_state.pending_input = None
     st.experimental_rerun()
 
 # ---------- PROCESSING INDICATOR ----------
