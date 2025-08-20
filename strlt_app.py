@@ -242,5 +242,7 @@ if st.session_state.processing:
 # ---------- Footer note ----------
 st.markdown(
     "<div class='footer-note'>Clica l'altaveu per llegir les respostes. "
-    "ℹ️ La primera resposta pot trigar
+    "ℹ️ La primera resposta pot trigar fins a <b>1 minut</b>.</div>",
+    unsafe_allow_html=True,
+)
 
