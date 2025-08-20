@@ -275,7 +275,7 @@ st.markdown("""
 st.markdown("✄┈┈┈┈")
 st.markdown(
     "<small>🤖 Aquesta és una intel·ligència artificial feta per la Festa Major de Sants. 🎉"
-    "🕵️ Pot generar informació incorrecta i no ens fem responsables de l’ús inadequat que en puguin fer adults massa esverats o criatures 🎈.
+    "🕵️ Pot generar informació incorrecta i no ens fem responsables de l’ús inadequat que en puguin fer adults massa esverats o criatures 🎈."
     "🍻 Pren-t’ho amb esperit festiu 🍻 i, si tens dubtes seriosos, pregunta a la comissió! 🎉</small>",
     unsafe_allow_html=True
 )
