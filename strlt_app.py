@@ -13,10 +13,6 @@ import requests
 # Reset function (safe callback)
 # -------------------------------
 def reset_conversation():
-    """
-    Safely reset conversation-related session state.
-    This runs inside a button callback (safe context for mutating session_state).
-    """
     conv_id = st.session_state.get("conversation_id")
     if conv_id:
         try:
@@ -75,7 +71,7 @@ def process_message(user_message: str):
                 "message": user_message.strip(),
                 "conversation_id": st.session_state.conversation_id
             },
-            timeout=60  # ⬅️ wait up to 1 minute
+            timeout=60
         )
         data = response.json()
         bot_response = data.get("response", "❌ Error de connexió")
@@ -94,8 +90,9 @@ def process_message(user_message: str):
     st.session_state.processing = False
 
 # ---------- SEND CALLBACK ----------
-def send_callback():
-    text = st.session_state.get("user_input", "").strip()
+def send_callback(text=None):
+    if text is None:
+        text = st.session_state.get("user_input", "").strip()
     if not text:
         return
     process_message(text)
@@ -110,11 +107,11 @@ st.markdown("""
     .main-header h2 { margin-top: 0.5rem; font-weight: 400; color: #444; }
     .badge { display: inline-block; margin-top: 0.8rem; padding: 0.3rem 0.8rem; background: #ffeed9; color: #d35400; border-radius: 12px; font-size: 0.9rem; font-weight: 600; }
     .chat-bubble-user { background: #e1f5fe; padding: 0.7rem 1rem; border-radius: 16px; margin: 0.4rem 0; max-width: 80%; align-self: flex-end; margin-left: auto; }
-    .chat-bubble-bot { background: #fff3e0; padding: 0.7rem 1rem; border-radius: 16px; margin: 0.4rem 0; max-width: 80%; align-self: flex-start; margin-right: auto; }
-    .small-note { color: #666; font-size: 0.9rem; }
-    .play-button { border: none; background: transparent; cursor: pointer; font-size: 1.1rem; }
-    .input-row { display:flex; gap:8px; align-items:center; }
-    .send-btn { padding:8px 12px; border-radius:8px; }
+    .chat-bubble-bot { background: #fff3e0; padding: 0.7rem 1rem 1.8rem 1rem; border-radius: 16px; margin: 0.4rem 0; max-width: 80%; align-self: flex-start; margin-right: auto; position: relative; }
+    .bot-audio-btn { position: absolute; bottom: 6px; right: 10px; border: none; background: transparent; cursor: pointer; font-size: 1.2rem; }
+    .suggestions { margin-top:1rem; display:flex; flex-wrap:wrap; gap:8px; }
+    .suggestions button { background:#eee; border:none; border-radius:12px; padding:6px 12px; cursor:pointer; font-size:0.9rem; }
+    .suggestions button:hover { background:#ddd; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -126,25 +123,45 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ---------- WELCOME ----------
+# ---------- WELCOME + Suggestions ----------
 if not st.session_state.messages:
     st.markdown("### 🎭 Benvingut a la Festa de Sants! ")
     st.markdown("Pregunta'm qualsevol cosa sobre la festa major del barri.")
+    st.markdown("<div class='suggestions'>", unsafe_allow_html=True)
+
+    suggestions = [
+        "Quin és el tema del carrer Papin?",
+        "Qui és la família Batllori?",
+        "Quins són els altres carrers de la festa?",
+        "Què hi ha avui al carrer Papin?",
+        "Què hi ha demà al carrer Papin?"
+    ]
+
+    cols = st.columns(len(suggestions))
+    for i, s in enumerate(suggestions):
+        with cols[i]:
+            if st.button(s, key=f"sugg_{i}"):
+                send_callback(s)
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------- Render chat messages ----------
 for i, msg in enumerate(st.session_state.messages):
     if msg["role"] == "user":
         st.markdown(f"<div class='chat-bubble-user'>🧑 {html.escape(msg['content'])}</div>", unsafe_allow_html=True)
     else:
-        cols = st.columns([0.95, 0.05])
-        with cols[0]:
-            st.markdown(f"<div class='chat-bubble-bot'>🤖 {html.escape(msg['content'])}</div>", unsafe_allow_html=True)
-        with cols[1]:
-            def make_on_click(mid=msg['id']):
-                def _cb():
-                    st.session_state.play_request = mid
-                return _cb
-            st.button("🔊", key=f"play_{msg['id']}", help="Click to synthesize and play this message", on_click=make_on_click())
+        st.markdown(
+            f"<div class='chat-bubble-bot'>🤖 {html.escape(msg['content'])}"
+            f"<button class='bot-audio-btn' onclick=\"fetch('/?play={msg['id']}')\">🔊</button>"
+            f"</div>",
+            unsafe_allow_html=True
+        )
+        # Real button for audio (server-side action)
+        def make_on_click(mid=msg['id']):
+            def _cb():
+                st.session_state.play_request = mid
+            return _cb
+        st.button(" ", key=f"hidden_play_{msg['id']}", on_click=make_on_click(), help="", args=(), kwargs={})
 
 # ---------- If user requested to play a message ----------
 if st.session_state.play_request:
@@ -155,10 +172,7 @@ if st.session_state.play_request:
             target = m
             break
 
-    if target is None:
-        st.warning("Requested message not found.")
-        st.session_state.play_request = None
-    else:
+    if target:
         if target.get('audio_b64'):
             audio_b64 = target['audio_b64']
         else:
@@ -209,7 +223,7 @@ cols = st.columns([4,1])
 with cols[0]:
     st.text_input("Escriu el teu missatge...", key="user_input", placeholder="Escriu... i premi Envia")
 with cols[1]:
-    st.button("📨 Envia", key="send_button", on_click=send_callback, args=())
+    st.button("📨 Envia", key="send_button", on_click=send_callback)
 st.markdown("</div>", unsafe_allow_html=True)
 
 if st.button("🔄 Reiniciar conversa", on_click=reset_conversation):
@@ -245,4 +259,3 @@ st.markdown(
     "ℹ️ La primera resposta pot trigar fins a <b>1 minut</b>.</div>",
     unsafe_allow_html=True,
 )
-
