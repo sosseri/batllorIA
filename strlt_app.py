@@ -14,97 +14,107 @@ st.set_page_config(page_title="Xat amb BatllorIA", page_icon="💬", layout="cen
 # ---------- INIT STATE ----------
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "waiting" not in st.session_state:
+    st.session_state.waiting = False
+
+# ---------- TITLE ----------
+st.markdown(
+    """
+    <h1 style="text-align: center; color: #4B2E2E;">🪴 Xat amb BatllorIA</h1>
+    <p style="text-align: center; color: #7A5C5C;">
+        Fes la teva pregunta sobre la festa i el barri
+    </p>
+    """,
+    unsafe_allow_html=True,
+)
 
 # ---------- FUNCTIONS ----------
-def speak_text(text):
+def text_to_speech(text):
     try:
         tts = gTTS(text=text, lang="ca")
-        audio_fp = BytesIO()
-        tts.write_to_fp(audio_fp)
-        audio_fp.seek(0)
-        audio_base64 = base64.b64encode(audio_fp.read()).decode("utf-8")
-        audio_html = f"""
-            <audio autoplay="true" controls="controls">
-                <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
-            </audio>
-        """
-        st.markdown(audio_html, unsafe_allow_html=True)
+        fp = BytesIO()
+        tts.write_to_fp(fp)
+        fp.seek(0)
+        audio_bytes = fp.read()
+        return "data:audio/mp3;base64," + base64.b64encode(audio_bytes).decode()
     except Exception as e:
-        st.error(f"Text-to-Speech error: {e}")
+        return None
 
-def query_bot(prompt, session_id="default"):
-    try:
-        response = requests.post(
-            "http://localhost:8000/chat",
-            json={"prompt": prompt, "session_id": session_id},
-            timeout=120
-        )
-        if response.status_code == 200:
-            return response.json().get("response", "Error: empty response")
-        else:
-            return f"Error {response.status_code}: {response.text}"
-    except Exception as e:
-        return f"Request failed: {e}"
+def query_bot(prompt):
+    url = "http://backend:8000/chat"  # FastAPI backend
+    response = requests.post(url, json={"prompt": prompt})
+    if response.status_code == 200:
+        return response.json().get("response", "")
+    return "Error: No response from backend."
 
-# ---------- UI ----------
-st.title("💬 Xat amb BatllorIA")
+def clean_response(bot_response):
+    return re.sub(r"\s*<think\b[^>]*>.*?</think>\s*", "", bot_response, flags=re.DOTALL | re.IGNORECASE)
 
-# Show chat history
+# ---------- CHAT DISPLAY ----------
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        st.markdown(message["content"], unsafe_allow_html=True)
+        if message["role"] == "assistant" and "audio" in message:
+            components.html(
+                f"""
+                <audio controls autoplay>
+                    <source src="{message['audio']}" type="audio/mp3">
+                </audio>
+                """,
+                height=60,
+            )
 
-# Input box
-if prompt := st.chat_input("Escriu la teva pregunta aquí..."):
-    # Add user message
-    st.session_state.messages.append({"role": "user", "content": prompt})
+# ---------- INPUT ----------
+user_input = st.chat_input("Escriu la teva pregunta...")
 
-    # Show user message
-    with st.chat_message("user"):
-        st.markdown(prompt)
+# ---------- HANDLE INPUT ----------
+if user_input:
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    st.session_state.waiting = True
+    st.rerun()
 
-    # Bot typing simulation
+if st.session_state.waiting:
     with st.chat_message("assistant"):
-        message_placeholder = st.empty()
-        full_response = ""
+        placeholder = st.empty()
+        dots = ""
+        for _ in range(3):
+            dots += "."
+            placeholder.markdown(f"**Pensant{dots}**")
+            time.sleep(0.5)
 
-        with st.spinner("El BatllorIA està pensant..."):
-            bot_response = query_bot(prompt, session_id="demo")
+    last_user_message = st.session_state.messages[-1]["content"]
+    bot_response = query_bot(last_user_message)
+    bot_response = clean_response(bot_response)
 
-        # Clean response (remove think blocks if any)
-        bot_response = re.sub(
-            r"\s*<think\b[^>]*>.*?</think>\s*",
-            "",
-            bot_response,
-            flags=re.DOTALL | re.IGNORECASE,
-        )
+    audio_src = text_to_speech(bot_response)
 
-        for chunk in bot_response.split():
-            full_response += chunk + " "
-            message_placeholder.markdown(full_response + "▌")
-            time.sleep(0.03)
+    st.session_state.messages.append(
+        {
+            "role": "assistant",
+            "content": bot_response,
+            "audio": audio_src,
+        }
+    )
+    st.session_state.waiting = False
+    st.rerun()
 
-        message_placeholder.markdown(full_response)
-
-        # Add bot response to state
-        st.session_state.messages.append({"role": "assistant", "content": full_response})
-
-        # Speak bot response
-        speak_text(full_response)
-
-# ---------- Suggested Questions ----------
+# ---------- SUGGESTED QUESTIONS (only if it's the very first user message) ----------
 if len(st.session_state.messages) == 0:
-    st.markdown("### 💡 Preguntes suggerides")
-    suggested = [
+    st.markdown("---")
+    st.markdown("💡 **Preguntes suggerides:**")
+    cols = st.columns(2)
+    suggestions = [
         "Quin és el tema del carrer Papin?",
         "Qui és la família Batllori?",
         "Quines són les altres vies de la festa?",
         "Què hi ha avui al carrer Papin?",
-        "Què hi ha demà al carrer Papin?"
+        "Què hi ha demà al carrer Papin?",
     ]
-
-    cols = st.columns(len(suggested))
-    for i, q in enumerate(suggested):
-        if cols[i].button(q):
+    for i, q in enumerate(suggestions):
+        if cols[i % 2].button(q):
             st.session_state.messages.append({"role": "user", "content": q})
+            st.session_state.waiting = True
             st.rerun()
+
+# ---------- FOOTER ----------
+st.markdown("<br><br><p style='text-align:center; color:gray; font-size:12px;'>*Aquest xat és experimental i pot contenir errors*</p>", unsafe_allow_html=True)
