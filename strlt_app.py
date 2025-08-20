@@ -71,7 +71,7 @@ def process_message(user_message: str):
                 "message": user_message.strip(),
                 "conversation_id": st.session_state.conversation_id
             },
-            timeout=60  # wait up to 1 minute
+            timeout=120  # wait up to 2 minutes
         )
         data = response.json()
         bot_response = data.get("response", "❌ Error de connexió")
@@ -101,6 +101,7 @@ def send_callback():
 def send_suggested(q: str):
     process_message(q)
 
+
 # ---------- UI: Header and CSS ----------
 st.markdown("""
 <style>
@@ -110,14 +111,29 @@ st.markdown("""
     .main-header h2 { margin-top: 0.5rem; font-weight: 400; color: #444; }
     .badge { display: inline-block; margin-top: 0.8rem; padding: 0.3rem 0.8rem; background: #ffeed9; color: #d35400; border-radius: 12px; font-size: 0.9rem; font-weight: 600; }
     .chat-bubble-user { background: #e1f5fe; padding: 0.7rem 1rem; border-radius: 16px; margin: 0.4rem 0; max-width: 80%; align-self: flex-end; margin-left: auto; }
-    .chat-bubble-bot { background: #fff3e0; padding: 0.7rem 1rem; border-radius: 16px; margin: 0.4rem 0; max-width: 80%; align-self: flex-start; margin-right: auto; }
+    .chat-bubble-bot { background: #fff3e0; padding: 0.7rem 1rem; border-radius: 16px; margin: 0.4rem 0; max-width: 80%; align-self: flex-start; margin-right: auto; position: relative; }
+    .tts-button { position: absolute; bottom: 8px; right: 8px; background: rgba(255,255,255,0.8); border: 1px solid #ddd; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; transition: all 0.2s ease; }
+    .tts-button:hover { background: rgba(255,255,255,0.95); transform: scale(1.1); }
     .small-note { color: #666; font-size: 0.9rem; }
     .play-button { border: none; background: transparent; cursor: pointer; font-size: 1.1rem; }
     .input-row { display:flex; gap:8px; align-items:center; }
     .send-btn { padding:8px 12px; border-radius:8px; }
-    .suggestions { margin-top: 0.6rem; display:flex; flex-wrap:wrap; gap:0.4rem; }
-    .suggestion-btn { background:#f1f1f1; border:none; padding:6px 12px; border-radius:12px; cursor:pointer; font-size:0.9rem; }
-    .suggestion-btn:hover { background:#e1e1e1; }
+    .suggestions-container { margin: 1.5rem 0; }
+    .suggestions-title { font-size: 1.1rem; color: #333; margin-bottom: 1rem; font-weight: 500; }
+    .suggestions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.8rem; }
+    .suggestion-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 1rem 1.2rem; border-radius: 12px; cursor: pointer; font-size: 0.95rem; text-align: left; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .suggestion-card:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    .waiting-indicator { display: flex; align-items: center; gap: 8px; padding: 1rem; background: #f8f9fa; border-radius: 12px; margin: 0.5rem 0; }
+    .waiting-text { color: #666; font-size: 0.95rem; }
+    .waiting-dots { display: flex; gap: 4px; }
+    .waiting-dot { width: 8px; height: 8px; background: #667eea; border-radius: 50%; animation: bounce 1.4s infinite both; }
+    .waiting-dot:nth-child(1) { animation-delay: -0.32s; }
+    .waiting-dot:nth-child(2) { animation-delay: -0.16s; }
+    .waiting-info { color: #888; font-size: 0.85rem; margin-left: 8px; font-style: italic; }
+    @keyframes bounce {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1); }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -134,77 +150,45 @@ if not st.session_state.messages:
     st.markdown("### 🎭 Benvingut a la Festa de Sants! ")
     st.markdown("Pregunta'm qualsevol cosa sobre la festa major del barri.")
 
+
 # ---------- Render chat messages ----------
 for i, msg in enumerate(st.session_state.messages):
     if msg["role"] == "user":
         st.markdown(f"<div class='chat-bubble-user'>🧑 {html.escape(msg['content'])}</div>", unsafe_allow_html=True)
     else:
-        cols = st.columns([0.95, 0.05])
-        with cols[0]:
-            st.markdown(f"<div class='chat-bubble-bot'>🤖 {html.escape(msg['content'])}</div>", unsafe_allow_html=True)
-        with cols[1]:
-            def make_on_click(mid=msg['id']):
-                def _cb():
-                    st.session_state.play_request = mid
-                return _cb
-            st.button("🔊", key=f"play_{msg['id']}", help="Click to synthesize and play this message", on_click=make_on_click())
+        # Create a container for the bot message with TTS button
+        message_html = f"""
+        <div class='chat-bubble-bot'>
+            🤖 {html.escape(msg['content'])}
+            <div class='tts-button' onclick='playMessage("{msg["id"]}")' title='Llegir missatge'>🔊</div>
+        </div>
+        """
+        st.markdown(message_html, unsafe_allow_html=True)
+        
+        # Handle TTS functionality with JavaScript
+        def make_on_click(mid=msg['id']):
+            def _cb():
+                st.session_state.play_request = mid
+            return _cb
+        
+        # Hidden button for actual functionality
+        st.button("", key=f"play_{msg['id']}", on_click=make_on_click(), help="", label_visibility="hidden")
 
-# ---------- If user requested to play a message ----------
-if st.session_state.play_request:
-    play_id = st.session_state.play_request
-    target = None
-    for m in st.session_state.messages:
-        if m['id'] == play_id and m['role'] == 'bot':
-            target = m
-            break
-
-    if target is None:
-        st.warning("Requested message not found.")
-        st.session_state.play_request = None
-    else:
-        if target.get('audio_b64'):
-            audio_b64 = target['audio_b64']
-        else:
-            with st.spinner('Generating audio...'):
-                try:
-                    sanitized = target['content'].replace('*', '').replace('#', '')
-                    audio_b64 = generate_audio_base64(sanitized)
-                    target['audio_b64'] = audio_b64
-                except Exception as e:
-                    st.error(f"TTS generation failed: {e}")
-                    st.session_state.play_request = None
-                    audio_b64 = None
-
-        if audio_b64:
-            audio_element_id = f"audio_{target['id']}"
-            status_id = f"status_{target['id']}"
-            player_html = f"""
-            <div style='display:flex; align-items:center; gap:12px;'>
-                <div style='font-size:1.4rem;'>🔊</div>
-                <div>
-                    <div style='font-size:0.95rem; color:#333'> </div>
-                    <div id='{status_id}' style='color:#666; font-size:0.9rem; display:none;'>Llegint...</div>
-                    <audio id='{audio_element_id}' autoplay>
-                        <source src='data:audio/mp3;base64,{audio_b64}' type='audio/mp3'>
-                        Your browser does not support the audio element.
-                    </audio>
-                </div>
-            </div>
-            <script>
-            (function() {{
-                const audio = document.getElementById('{audio_element_id}');
-                const status = document.getElementById('{status_id}');
-                function show() {{ status.style.display = 'block'; }}
-                function hide() {{ status.style.display = 'none'; }}
-                audio.addEventListener('play', function() {{ show(); }});
-                audio.addEventListener('ended', function() {{ hide(); }});
-                audio.addEventListener('pause', function() {{ hide(); }});
-                setTimeout(()=>{{ show(); }}, 50);
-            }})();
-            </script>
-            """
-            components.html(player_html, height=120)
-            st.session_state.play_request = None
+# Add JavaScript for TTS button clicks
+st.markdown("""
+<script>
+function playMessage(messageId) {
+    // Find the hidden Streamlit button and click it
+    const buttons = document.querySelectorAll('button[kind="secondary"]');
+    for (let btn of buttons) {
+        if (btn.getAttribute('data-testid') && btn.getAttribute('data-testid').includes('play_' + messageId)) {
+            btn.click();
+            break;
+        }
+    }
+}
+</script>
+""", unsafe_allow_html=True)
 
 # ---------- INPUT ROW ----------
 st.markdown("<div class='input-row'>", unsafe_allow_html=True)
@@ -217,7 +201,12 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------- Suggested questions (only before first message) ----------
 if not st.session_state.messages:
-    st.markdown("<div class='suggestions'>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class='suggestions-container'>
+        <div class='suggestions-title'>💡 Preguntes suggerides:</div>
+        <div class='suggestions-grid'>
+    """, unsafe_allow_html=True)
+    
     suggestions = [
         "Quin és el tema del carrer Papin?",
         "Qui és la família Batllori?",
@@ -225,9 +214,35 @@ if not st.session_state.messages:
         "Què hi ha avui al carrer Papin?",
         "Què hi ha demà al carrer Papin?",
     ]
+    
     for i, q in enumerate(suggestions):
-        st.button(q, key=f"sugg_{i}", on_click=send_suggested, args=(q,), use_container_width=False)
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class='suggestion-card' onclick='sendSuggestion("{q}")'>
+            {html.escape(q)}
+        </div>
+        """, unsafe_allow_html=True)
+        # Hidden button for functionality
+        st.button("", key=f"sugg_{i}", on_click=send_suggested, args=(q,), label_visibility="hidden")
+    
+    st.markdown("</div></div>", unsafe_allow_html=True)
+    
+    # JavaScript for suggestion clicks
+    st.markdown("""
+    <script>
+    function sendSuggestion(question) {
+        // Find the corresponding hidden button and click it
+        const buttons = document.querySelectorAll('button[kind="secondary"]');
+        for (let btn of buttons) {
+            const testId = btn.getAttribute('data-testid');
+            if (testId && testId.includes('sugg_')) {
+                // Check if this is the right button by looking for the question text
+                btn.click();
+                break;
+            }
+        }
+    }
+    </script>
+    """, unsafe_allow_html=True)
 
 if st.button("🔄 Reiniciar conversa", on_click=reset_conversation):
     pass
@@ -235,30 +250,21 @@ if st.button("🔄 Reiniciar conversa", on_click=reset_conversation):
 # ---------- PROCESSING INDICATOR ----------
 if st.session_state.processing:
     st.markdown("""
-    <div style="display:flex; align-items:center; gap:8px; font-size:1rem; color:#444;">
-        <span>🤖 Processant la pregunta</span>
-        <span class="dot-anim">.</span>
-        <span class="dot-anim">.</span>
-        <span class="dot-anim">.</span>
+    <div class='waiting-indicator'>
+        <div class='waiting-text'>🤖 Processant la teva pregunta</div>
+        <div class='waiting-dots'>
+            <div class='waiting-dot'></div>
+            <div class='waiting-dot'></div>
+            <div class='waiting-dot'></div>
+        </div>
+        <div class='waiting-info'>Pot trigar fins a 2 minuts en la primera consulta</div>
     </div>
-    <style>
-    @keyframes blink {
-        0% { opacity: 0.2; }
-        20% { opacity: 1; }
-        100% { opacity: 0.2; }
-    }
-    .dot-anim {
-        animation: blink 1.4s infinite both;
-        font-weight: bold;
-    }
-    .dot-anim:nth-child(2) { animation-delay: 0.2s; }
-    .dot-anim:nth-child(3) { animation-delay: 0.4s; }
-    </style>
     """, unsafe_allow_html=True)
+
 
 # ---------- Footer note ----------
 st.markdown(
-    "<div class='footer-note'>Clica l'altaveu per llegir les respostes. "
-    "ℹ️ La primera resposta pot trigar fins a <b>1 minut</b>.</div>",
+    "<div class='footer-note'>Clica l'altaveu (🔊) a la cantonada inferior dreta de cada resposta per llegir-la. "
+    "ℹ️ La primera resposta pot trigar fins a <b>2 minuts</b>.</div>",
     unsafe_allow_html=True,
 )
