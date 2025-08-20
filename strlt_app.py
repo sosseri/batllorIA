@@ -7,6 +7,37 @@ import re
 import streamlit.components.v1 as components
 import uuid
 import html
+import requests
+
+# -------------------------------
+# Reset function (safe callback)
+# -------------------------------
+def reset_conversation():
+    """
+    Safely reset conversation-related session state.
+    This runs inside a button callback (safe context for mutating session_state).
+    """
+    # try to delete remote conversation if exists
+    conv_id = st.session_state.get("conversation_id")
+    if conv_id:
+        try:
+            requests.delete(f"https://batllori-chat.onrender.com/conversations/{conv_id}", timeout=5)
+        except Exception:
+            # ignore network errors during reset
+            pass
+
+    # clear only the keys we need to reset (avoid clearing everything)
+    st.session_state["messages"] = []
+    st.session_state["conversation_id"] = None
+    st.session_state["processing"] = False
+
+    # reset the input box safely if it exists; if not, create it
+    # (use dictionary-style assignment which is explicit and safe)
+    st.session_state["user_input"] = ""
+
+    # optionally rerender immediately
+    st.rerun()
+
 
 # ---------------------------------------------------
 # Streamlit chat app: on-demand TTS when user presses read
@@ -248,7 +279,7 @@ if st.button("🔄 Reiniciar conversa"):
     st.session_state.conversation_id = None
     st.session_state.play_request = None
     st.session_state.user_input = ""
-    st.experimental_rerun()
+    st.rerun()
 
 # ---------- PROCESSING INDICATOR ----------
 if st.session_state.processing:
@@ -257,4 +288,4 @@ if st.session_state.processing:
 # ---------- NOTES ----------
 st.markdown("""
 ---
-*Notes:* audio is synthesized only when you press the speaker icon. The generated MP3 is kept in memory for the session so pressing the icon again will replay without regenerating until the session resets.""")
+*Clicca sull'altoparlante per leggere le risposte. La prima risposta potrebbe farti attendere anche 1 minuto. """)
