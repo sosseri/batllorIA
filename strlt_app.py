@@ -268,18 +268,13 @@ with cols[1]:
     st.button("📨 Envia", key="send_button", on_click=send_callback, args=())
 st.markdown("</div>", unsafe_allow_html=True)
 
-# ---------- RESET BUTTON ----------
-if st.button("🔄 Reiniciar conversa"):
-    if st.session_state.conversation_id:
-        try:
-            requests.delete(f"https://batllori-chat.onrender.com/conversations/{st.session_state.conversation_id}")
-        except Exception:
-            pass
-    st.session_state.messages = []
-    st.session_state.conversation_id = None
-    st.session_state.play_request = None
-    st.session_state.user_input = ""
-    st.rerun()
+# -------------------------------
+# Put the button in the UI with on_click
+# -------------------------------
+if st.button("🔄 Reiniciar conversa", on_click=reset_conversation):
+    # nothing needed here because reset_conversation does the job
+    pass
+
 
 # ---------- PROCESSING INDICATOR ----------
 if st.session_state.processing:
