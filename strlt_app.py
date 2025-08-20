@@ -7,14 +7,13 @@ import re
 import streamlit.components.v1 as components
 import uuid
 import time
-import numpy as np
 import html
 
 # ---------------------------------------------------
-# Streamlit chat app with play-on-click + autoplay
-# - Play-on-click for each bot message (default ON)
-# - Checkbox "Auto-play replies" enables autoplay fallback
-# - Client-side visual indicator "Sto leggendo..." while audio plays
+# Streamlit chat app: on-demand TTS when user presses read
+# - Audio is generated only when the user clicks the read button
+# - A small "speaker" logo (emoji) is shown next to each bot message
+# - When pressed the server generates the MP3 and the client plays it (autoplay)
 # Comments in English throughout
 # ---------------------------------------------------
 
@@ -23,22 +22,21 @@ st.set_page_config(page_title="Xat amb BatllorIA", page_icon="💬", layout="cen
 
 # ---------- SESSION STATE INIT ----------
 if "messages" not in st.session_state:
-    # messages: list of dicts {id, role, content, audio_b64}
+    # messages: list of dicts {id, role, content, audio_b64 (optional)}
     st.session_state.messages = []
 if "conversation_id" not in st.session_state:
     st.session_state.conversation_id = None
 if "processing" not in st.session_state:
     st.session_state.processing = False
-
-# Toggle for autoplay (default ON)
-if "autoplay" not in st.session_state:
-    st.session_state.autoplay = True
+if "play_request" not in st.session_state:
+    # Holds message id that the user requested to play
+    st.session_state.play_request = None
 
 # ---------- HELPER: TTS -> base64 ----------
 def generate_audio_base64(text: str) -> str:
     """
     Synthesize text to speech using gTTS and return base64-encoded MP3 bytes.
-    Keep this function relatively small; gTTS may take time for long texts.
+    This is called only when the user explicitly requests playback.
     """
     tts = gTTS(text=text, lang='ca')
     buf = BytesIO()
@@ -46,16 +44,18 @@ def generate_audio_base64(text: str) -> str:
     buf.seek(0)
     return base64.b64encode(buf.read()).decode()
 
-# ---------- PROCESS MESSAGE (send to backend, save audio) ----------
+# ---------- PROCESS MESSAGE (send to backend, DO NOT generate audio) ----------
 def process_message(user_message: str):
     """
-    Send user message to backend, receive bot response, generate audio base64
-    and store everything in session_state.messages. We DO NOT play audio server-side.
+    Send user message to backend, receive bot response and store it in session state.
+    No audio is generated at this point.
     """
     if not user_message.strip() or st.session_state.processing:
         return
 
     st.session_state.processing = True
+
+    # append user message
     st.session_state.messages.append({
         "id": uuid.uuid4().hex,
         "role": "user",
@@ -82,21 +82,13 @@ def process_message(user_message: str):
     except Exception as e:
         bot_response = f"❌ Error: {str(e)}"
 
-    # Try to synthesize audio; if fails, still save textual response
-    audio_b64 = None
-    try:
-        # remove markdown characters that might confuse TTS
-        sanitized = bot_response.replace("*", "").replace("#", "")
-        audio_b64 = generate_audio_base64(sanitized)
-    except Exception as e:
-        # If TTS fails, keep audio_b64 = None and continue
-        st.warning(f"TTS generation failed: {e}")
-
+    # append bot message WITHOUT audio
     st.session_state.messages.append({
         "id": uuid.uuid4().hex,
         "role": "bot",
         "content": bot_response,
-        "audio_b64": audio_b64
+        # audio_b64 will be created only when user presses read
+        "audio_b64": None
     })
 
     st.session_state.processing = False
@@ -112,6 +104,7 @@ st.markdown("""
     .chat-bubble-user { background: #e1f5fe; padding: 0.7rem 1rem; border-radius: 16px; margin: 0.4rem 0; max-width: 80%; align-self: flex-end; margin-left: auto; }
     .chat-bubble-bot { background: #fff3e0; padding: 0.7rem 1rem; border-radius: 16px; margin: 0.4rem 0; max-width: 80%; align-self: flex-start; margin-right: auto; }
     .small-note { color: #666; font-size: 0.9rem; }
+    .play-button { border: none; background: transparent; cursor: pointer; font-size: 1.1rem; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -123,90 +116,87 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ---------- Controls: autoplay toggle ----------
-st.checkbox("Auto-play replies", value=st.session_state.autoplay, key="autoplay")
-
 # ---------- WELCOME ----------
 if not st.session_state.messages:
-    st.markdown("### 🎭 Benvingut a la Festa de Sants! \nPregunta'm qualsevol cosa sobre la festa major del barri.")
+    st.markdown("### 🎭 Benvingut a la Festa de Sants! 
+Pregunta'm qualsevol cosa sobre la festa major del barri.")
 
 # ---------- Render chat messages ----------
+# We render messages first. Each bot message shows a small speaker icon button that the user can press to request audio generation.
 for i, msg in enumerate(st.session_state.messages):
     if msg["role"] == "user":
         # user bubble
         st.markdown(f"<div class='chat-bubble-user'>🧑 {html.escape(msg['content'])}</div>", unsafe_allow_html=True)
     else:
-        # bot bubble (text)
-        st.markdown(f"<div class='chat-bubble-bot'>🤖 {html.escape(msg['content'])}</div>", unsafe_allow_html=True)
+        # bot bubble (text) + speaker icon
+        cols = st.columns([0.95, 0.05])
+        with cols[0]:
+            st.markdown(f"<div class='chat-bubble-bot'>🤖 {html.escape(msg['content'])}</div>", unsafe_allow_html=True)
+        with cols[1]:
+            # show a speaker/logo button — when pressed, store the play request in session_state
+            btn_key = f"play_{msg['id']}"
+            if st.button("🔊", key=btn_key, help="Click to synthesize and play this message"):
+                st.session_state.play_request = msg['id']
 
-        # playback controls rendered in an isolated iframe using components.html
-        if msg.get("audio_b64"):
-            # unique ids for DOM elements
-            audio_id = f"audio_{msg['id']}"
-            btn_id = f"btn_{msg['id']}"
-            status_id = f"status_{msg['id']}"
+# ---------- If user requested to play a message, generate audio and render player ----------
+if st.session_state.play_request:
+    play_id = st.session_state.play_request
+    # find the message
+    target = None
+    for m in st.session_state.messages:
+        if m['id'] == play_id and m['role'] == 'bot':
+            target = m
+            break
 
-            # Auto-play preference from session_state
-            autoplay_flag = "true" if st.session_state.autoplay else "false"
+    if target is None:
+        st.warning("Requested message not found.")
+        st.session_state.play_request = None
+    else:
+        # show a small server-side indicator while generating
+        with st.spinner('Generating audio...'):
+            try:
+                sanitized = target['content'].replace('*', '').replace('#', '')
+                audio_b64 = generate_audio_base64(sanitized)
+                # save audio to the message so next time we can play without re-generating
+                target['audio_b64'] = audio_b64
+            except Exception as e:
+                st.error(f"TTS generation failed: {e}")
+                st.session_state.play_request = None
+                audio_b64 = None
 
-            # small JS component: play button, "Sto leggendo..." indicator and optional autoplay
-            audio_html = f"""
-            <div style='margin-top:6px; display:flex; align-items:center; gap:8px;'>
-                <button id='{btn_id}' style='border-radius:8px; padding:6px 10px; cursor:pointer;'>▶️ Llegeix</button>
-                <span id='{status_id}' style='display:none; color:#666; font-size:0.9em;'>Sto leggendo...</span>
-                <audio id='{audio_id}' preload='auto'>
-                    <source src='data:audio/mp3;base64,{msg['audio_b64']}' type='audio/mp3'>
-                    Your browser does not support the audio element.
-                </audio>
+        if audio_b64:
+            # render an iframe that autoplay plays audio and shows "Sto leggendo..." while playing
+            audio_element_id = f"audio_{target['id']}"
+            status_id = f"status_{target['id']}"
+            player_html = f"""
+            <div style='display:flex; align-items:center; gap:12px;'>
+                <div style='font-size:1.4rem;'>🔊</div>
+                <div>
+                    <div style='font-size:0.95rem; color:#333'>Playing message</div>
+                    <div id='{status_id}' style='color:#666; font-size:0.9rem; display:none;'>Sto leggendo...</div>
+                    <audio id='{audio_element_id}' autoplay>
+                        <source src='data:audio/mp3;base64,{audio_b64}' type='audio/mp3'>
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
             </div>
             <script>
             (function() {{
-                const audio = document.getElementById('{audio_id}');
-                const btn = document.getElementById('{btn_id}');
+                const audio = document.getElementById('{audio_element_id}');
                 const status = document.getElementById('{status_id}');
-
-                // helper to show/hide status
-                function show() {{ status.style.display = 'inline'; }}
+                function show() {{ status.style.display = 'block'; }}
                 function hide() {{ status.style.display = 'none'; }}
-
-                // play-on-click
-                btn.addEventListener('click', function(e) {{
-                    try {{
-                        show();
-                        audio.currentTime = 0;
-                        audio.play();
-                        btn.disabled = true;
-                    }} catch(err) {{ console.warn('Play failed', err); }}
-                }});
-
-                audio.addEventListener('play', function() {{ show(); btn.disabled = true; }});
-                audio.addEventListener('ended', function() {{ hide(); btn.disabled = false; }});
-                audio.addEventListener('pause', function() {{ hide(); btn.disabled = false; }});
-
-                // autoplay fallback: wait a short moment so the component is visible,
-                // then start playback if the user enabled autoplay in the Streamlit checkbox.
-                if ({autoplay_flag} === true) {{
-                    // small timeout to allow the page to render fully
-                    setTimeout(function() {{
-                        try {{
-                            show();
-                            audio.currentTime = 0;
-                            // attempt to play; browsers may block if autoplay policies
-                            const p = audio.play();
-                            if (p !== undefined) {{
-                                p.then(()=>{{ btn.disabled = true; }}).catch(()=>{{ /* autoplay blocked */ hide(); btn.disabled=false; }});
-                            }}
-                        }} catch(e) {{ console.warn('Autoplay failed', e); hide(); }}
-                    }}, 300);
-                }}
+                audio.addEventListener('play', function() {{ show(); }});
+                audio.addEventListener('ended', function() {{ hide(); }});
+                audio.addEventListener('pause', function() {{ hide(); }});
+                // safety: show status immediately (some browsers delay play events)
+                setTimeout(()=>{{ show(); }}, 50);
             }})();
             </script>
             """
-
-            components.html(audio_html, height=80)
-        else:
-            # no audio: render a small note
-            st.markdown("<div class='small-note'>No audio available for this message.</div>", unsafe_allow_html=True)
+            components.html(player_html, height=120)
+            # clear play_request so it doesn't re-run again automatically
+            st.session_state.play_request = None
 
 # ---------- INPUT FORM ----------
 with st.form(key="chat_form", clear_on_submit=True):
@@ -217,10 +207,9 @@ with st.form(key="chat_form", clear_on_submit=True):
         submitted = st.form_submit_button("📨 Envia", type="primary")
 
     if submitted and user_input.strip():
-        # send message and generate audio in background (server-side)
+        # send message and do NOT generate audio here
         process_message(user_input)
-        # do NOT call st.rerun() here: we want the page to finish rendering so
-        # the client-side audio elements can play without being cut by extra reruns.
+        # Do not call st.rerun() here: we let Streamlit finish the normal rerun to show the new message
 
 # ---------- RESET BUTTON ----------
 if st.button("🔄 Reiniciar conversa"):
@@ -231,12 +220,14 @@ if st.button("🔄 Reiniciar conversa"):
             pass
     st.session_state.messages = []
     st.session_state.conversation_id = None
-    # After clearing state, rerun to refresh UI
+    st.session_state.play_request = None
     st.experimental_rerun()
 
 # ---------- PROCESSING INDICATOR ----------
 if st.session_state.processing:
-    st.info("🤖 Processant la teva pregunta...")
+    st.info("🤖 Processing your question...")
 
 # ---------- NOTES ----------
-st.markdown("\n---\n*Notes:* the audio is stored server-side as base64 and embedded in the page.")
+st.markdown("
+---
+*Notes:* audio is synthesized only when you press the speaker icon. The generated MP3 is kept in memory for the session so pressing the icon again will replay without regenerating until the session resets.")
