@@ -127,7 +127,6 @@ def play_audio(text: str):
     except Exception as e:
         st.warning(f"No s'ha pogut reproduir l'àudio: {e}")
 
-
 # ---------- MESSAGE HANDLER ----------
 def process_message(user_message: str):
     if not user_message.strip() or st.session_state.processing:
@@ -153,10 +152,20 @@ def process_message(user_message: str):
     except Exception as e:
         bot_response = f"❌ Error: {str(e)}"
     
+    # 1. Save response in state
     st.session_state.messages.append({"role": "bot", "content": bot_response})
-    
-    play_audio(bot_response.replace("*", "").replace("#", ""))
+
+    # 2. Force UI update BEFORE playing audio
+    placeholder = st.empty()
+    placeholder.markdown(f"<div class='chat-bubble-bot'>🤖 {bot_response}</div>", unsafe_allow_html=True)
     st.session_state.processing = False
+
+    # 3. Small pause so user sees text first
+    time.sleep(0.5)
+
+    # 4. Now play audio
+    play_audio(bot_response.replace("*", "").replace("#", ""))
+
     
 # ---------- WELCOME ----------
 if not st.session_state.messages:
