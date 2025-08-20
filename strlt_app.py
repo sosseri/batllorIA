@@ -104,263 +104,20 @@ def send_suggested(q: str):
 # ---------- UI: Header and CSS ----------
 st.markdown("""
 <style>
-    body { 
-        background-color: #f8fafc; 
-        font-family: 'Segoe UI', 'Helvetica Neue', sans-serif; 
-    }
-    .main-header { 
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 20px; 
-        padding: 2.5rem; 
-        text-align: center; 
-        color: white; 
-        margin-bottom: 2rem; 
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-    }
-    .main-header h1 { 
-        margin: 0; 
-        font-size: 2.2rem; 
-        font-weight: 700;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .main-header h2 { 
-        margin-top: 0.5rem; 
-        font-weight: 300; 
-        color: rgba(255,255,255,0.9); 
-        font-size: 1.1rem;
-    }
-    .badge { 
-        display: inline-block; 
-        margin-top: 1rem; 
-        padding: 0.5rem 1.2rem; 
-        background: rgba(255,255,255,0.2); 
-        color: white; 
-        border-radius: 25px; 
-        font-size: 1rem; 
-        font-weight: 600;
-        backdrop-filter: blur(10px);
-    }
-    
-    .message-wrapper {
-        display: flex;
-        margin: 1rem 0;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-    
-    .message-wrapper.user {
-        justify-content: flex-end;
-    }
-    
-    .message-wrapper.bot {
-        justify-content: flex-start;
-        position: relative;
-    }
-    
-    .chat-bubble-user { 
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1rem 1.5rem; 
-        border-radius: 20px 20px 5px 20px; 
-        max-width: 75%; 
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        font-size: 0.95rem;
-        line-height: 1.4;
-    }
-    
-    .chat-bubble-bot { 
-        background: white;
-        color: #2d3748;
-        padding: 1rem 1.5rem; 
-        border-radius: 20px 20px 20px 5px; 
-        max-width: 75%; 
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        border: 1px solid #e2e8f0;
-        font-size: 0.95rem;
-        line-height: 1.4;
-        position: relative;
-        margin-bottom: 2.5rem;
-    }
-    
-    .bot-message-container {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        max-width: 80%;
-    }
-    
-    .audio-button-container {
-        position: absolute;
-        bottom: -35px;
-        right: 10px;
-    }
-    
-    .audio-button {
-        background: #f7fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-size: 0.85rem;
-        flex-shrink: 0;
-    }
-    
-    .audio-button:hover {
-        background: #edf2f7;
-        border-color: #cbd5e0;
-        transform: scale(1.05);
-    }
-    
-    .input-section {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        border: 1px solid #e2e8f0;
-        margin-bottom: 1rem;
-    }
-    
-    .input-row { 
-        display: flex; 
-        gap: 12px; 
-        align-items: flex-end;
-        margin-bottom: 1rem;
-    }
-    
-    .send-btn { 
-        padding: 12px 20px; 
-        border-radius: 12px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-    }
-    
-    .send-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
-    
-    .suggestions-section {
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #e2e8f0;
-    }
-    
-    .suggestions-title {
-        font-size: 0.9rem;
-        color: #718096;
-        margin-bottom: 0.8rem;
-        font-weight: 500;
-    }
-    
-    .suggestions { 
-        display: flex; 
-        flex-wrap: wrap; 
-        gap: 0.5rem; 
-    }
-    
-    .suggestion-btn { 
-        background: #f7fafc;
-        color: #4a5568;
-        border: 1px solid #e2e8f0;
-        padding: 8px 16px; 
-        border-radius: 20px; 
-        cursor: pointer; 
-        font-size: 0.9rem;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-    }
-    
-    .suggestion-btn:hover { 
-        background: #edf2f7;
-        border-color: #cbd5e0;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .welcome-section {
-        background: white;
-        border-radius: 16px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        border: 1px solid #e2e8f0;
-        text-align: center;
-    }
-    
-    .welcome-section h3 {
-        color: #2d3748;
-        margin-bottom: 0.5rem;
-    }
-    
-    .welcome-section p {
-        color: #718096;
-        font-size: 1.1rem;
-    }
-    
-    .reset-button {
-        background: #fed7d7;
-        color: #c53030;
-        border: 1px solid #feb2b2;
-        padding: 8px 16px;
-        border-radius: 12px;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        margin-top: 1rem;
-    }
-    
-    .reset-button:hover {
-        background: #feb2b2;
-        transform: translateY(-1px);
-    }
-    
-    .footer-note { 
-        color: #718096; 
-        font-size: 0.85rem; 
-        text-align: center;
-        margin-top: 1.5rem;
-        padding: 1rem;
-        background: #f7fafc;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-    }
-    
-    .processing-indicator {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 1rem;
-        background: white;
-        border-radius: 12px;
-        margin: 1rem 0;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e2e8f0;
-    }
-    
-    @keyframes blink {
-        0% { opacity: 0.2; }
-        20% { opacity: 1; }
-        100% { opacity: 0.2; }
-    }
-    .dot-anim {
-        animation: blink 1.4s infinite both;
-        font-weight: bold;
-        color: #667eea;
-    }
-    .dot-anim:nth-child(2) { animation-delay: 0.2s; }
-    .dot-anim:nth-child(3) { animation-delay: 0.4s; }
+    body { background-color: #fafafa; font-family: 'Helvetica Neue', sans-serif; }
+    .main-header { background: url('https://upload.wikimedia.org/wikipedia/commons/0/0c/Azulejo_pattern.svg'); background-size: cover; background-position: center; border-radius: 16px; padding: 2rem; text-align: center; color: #222; margin-bottom: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .main-header h1 { margin: 0; font-size: 1.8rem; }
+    .main-header h2 { margin-top: 0.5rem; font-weight: 400; color: #444; }
+    .badge { display: inline-block; margin-top: 0.8rem; padding: 0.3rem 0.8rem; background: #ffeed9; color: #d35400; border-radius: 12px; font-size: 0.9rem; font-weight: 600; }
+    .chat-bubble-user { background: #e1f5fe; padding: 0.7rem 1rem; border-radius: 16px; margin: 0.4rem 0; max-width: 80%; align-self: flex-end; margin-left: auto; }
+    .chat-bubble-bot { background: #fff3e0; padding: 0.7rem 1rem; border-radius: 16px; margin: 0.4rem 0; max-width: 80%; align-self: flex-start; margin-right: auto; }
+    .small-note { color: #666; font-size: 0.9rem; }
+    .play-button { border: none; background: transparent; cursor: pointer; font-size: 1.1rem; }
+    .input-row { display:flex; gap:8px; align-items:center; }
+    .send-btn { padding:8px 12px; border-radius:8px; }
+    .suggestions { margin-top: 0.6rem; display:flex; flex-wrap:wrap; gap:0.4rem; }
+    .suggestion-btn { background:#f1f1f1; border:none; padding:6px 12px; border-radius:12px; cursor:pointer; font-size:0.9rem; }
+    .suggestion-btn:hover { background:#e1e1e1; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -374,52 +131,23 @@ st.markdown("""
 
 # ---------- WELCOME ----------
 if not st.session_state.messages:
-    st.markdown("""
-    <div class="welcome-section">
-        <h3>🎭 Benvingut a la Festa de Sants!</h3>
-        <p>Pregunta'm qualsevol cosa sobre la festa major del barri.</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("### 🎭 Benvingut a la Festa de Sants! ")
+    st.markdown("Pregunta'm qualsevol cosa sobre la festa major del barri.")
 
 # ---------- Render chat messages ----------
 for i, msg in enumerate(st.session_state.messages):
     if msg["role"] == "user":
-        st.markdown(f"""
-        <div class='message-wrapper user'>
-            <div class='chat-bubble-user'>🧑 {html.escape(msg['content'])}</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f"<div class='chat-bubble-user'>🧑 {html.escape(msg['content'])}</div>", unsafe_allow_html=True)
     else:
-        # Bot message with positioned audio button
-        st.markdown(f"""
-        <div class='message-wrapper bot'>
-            <div class='bot-message-container'>
-                <div class='chat-bubble-bot'>🤖 {html.escape(msg['content'])}</div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Audio button positioned at bottom-right of the message
-        cols = st.columns([1])
+        cols = st.columns([0.95, 0.05])
         with cols[0]:
+            st.markdown(f"<div class='chat-bubble-bot'>🤖 {html.escape(msg['content'])}</div>", unsafe_allow_html=True)
+        with cols[1]:
             def make_on_click(mid=msg['id']):
                 def _cb():
                     st.session_state.play_request = mid
                 return _cb
-            
-            # Use custom styling for positioning
-            st.markdown(f"""
-            <div style='display: flex; justify-content: flex-start; margin-top: -40px; margin-left: calc(75% - 35px); margin-bottom: 20px;'>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            audio_cols = st.columns([10, 1])
-            with audio_cols[1]:
-                st.button("🔊", 
-                         key=f"audio_{msg['id']}", 
-                         help="Escolta aquest missatge", 
-                         on_click=make_on_click(),
-                         use_container_width=True)
+            st.button("🔊", key=f"play_{msg['id']}", help="Click to synthesize and play this message", on_click=make_on_click())
 
 # ---------- If user requested to play a message ----------
 if st.session_state.play_request:
@@ -478,29 +206,18 @@ if st.session_state.play_request:
             components.html(player_html, height=120)
             st.session_state.play_request = None
 
-# ---------- INPUT SECTION ----------
-st.markdown('<div class="input-section">', unsafe_allow_html=True)
-
-st.markdown('<div class="input-row">', unsafe_allow_html=True)
-cols = st.columns([5, 1])
+# ---------- INPUT ROW ----------
+st.markdown("<div class='input-row'>", unsafe_allow_html=True)
+cols = st.columns([4,1])
 with cols[0]:
-    st.text_input("Escriu el teu missatge...", 
-                 key="user_input", 
-                 placeholder="Escriu la teva pregunta aquí...",
-                 label_visibility="collapsed")
+    st.text_input("Escriu el teu missatge...", key="user_input", placeholder="Escriu... i premi Envia")
 with cols[1]:
-    st.button("📨 Envia", 
-             key="send_button", 
-             on_click=send_callback, 
-             use_container_width=True,
-             type="primary")
+    st.button("📨 Envia", key="send_button", on_click=send_callback, args=())
 st.markdown("</div>", unsafe_allow_html=True)
 
-# ---------- Suggested questions (now below input) ----------
+# ---------- Suggested questions (only before first message) ----------
 if not st.session_state.messages:
-    st.markdown('<div class="suggestions-section">', unsafe_allow_html=True)
-    st.markdown('<div class="suggestions-title">💡 Preguntes suggerides:</div>', unsafe_allow_html=True)
-    st.markdown('<div class="suggestions">', unsafe_allow_html=True)
+    st.markdown("<div class='suggestions'>", unsafe_allow_html=True)
     suggestions = [
         "Quin és el tema del carrer Papin?",
         "Qui és la família Batllori?",
@@ -509,26 +226,34 @@ if not st.session_state.messages:
         "Què hi ha demà al carrer Papin?",
     ]
     for i, q in enumerate(suggestions):
-        st.button(q, key=f"sugg_{i}", on_click=send_suggested, args=(q,))
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.button(q, key=f"sugg_{i}", on_click=send_suggested, args=(q,), use_container_width=False)
     st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("</div>", unsafe_allow_html=True)
-
-# Reset button
-st.button("🔄 Reiniciar conversa", 
-         on_click=reset_conversation, 
-         help="Comença una nova conversa")
+if st.button("🔄 Reiniciar conversa", on_click=reset_conversation):
+    pass
 
 # ---------- PROCESSING INDICATOR ----------
 if st.session_state.processing:
     st.markdown("""
-    <div class="processing-indicator">
+    <div style="display:flex; align-items:center; gap:8px; font-size:1rem; color:#444;">
         <span>🤖 Processant la pregunta</span>
         <span class="dot-anim">.</span>
         <span class="dot-anim">.</span>
         <span class="dot-anim">.</span>
     </div>
+    <style>
+    @keyframes blink {
+        0% { opacity: 0.2; }
+        20% { opacity: 1; }
+        100% { opacity: 0.2; }
+    }
+    .dot-anim {
+        animation: blink 1.4s infinite both;
+        font-weight: bold;
+    }
+    .dot-anim:nth-child(2) { animation-delay: 0.2s; }
+    .dot-anim:nth-child(3) { animation-delay: 0.4s; }
+    </style>
     """, unsafe_allow_html=True)
 
 # ---------- Footer note ----------
