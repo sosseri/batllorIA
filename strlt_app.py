@@ -13,10 +13,6 @@ import requests
 # Reset function (safe callback)
 # -------------------------------
 def reset_conversation():
-    """
-    Safely reset conversation-related session state.
-    This runs inside a button callback (safe context for mutating session_state).
-    """
     conv_id = st.session_state.get("conversation_id")
     if conv_id:
         try:
@@ -75,7 +71,7 @@ def process_message(user_message: str):
                 "message": user_message.strip(),
                 "conversation_id": st.session_state.conversation_id
             },
-            timeout=60  # ⬅️ wait up to 1 minute
+            timeout=60  # wait up to 1 minute
         )
         data = response.json()
         bot_response = data.get("response", "❌ Error de connexió")
@@ -101,6 +97,10 @@ def send_callback():
     process_message(text)
     st.session_state.user_input = ""
 
+# Helper: send pre-suggested question
+def send_suggested(q: str):
+    process_message(q)
+
 # ---------- UI: Header and CSS ----------
 st.markdown("""
 <style>
@@ -115,6 +115,9 @@ st.markdown("""
     .play-button { border: none; background: transparent; cursor: pointer; font-size: 1.1rem; }
     .input-row { display:flex; gap:8px; align-items:center; }
     .send-btn { padding:8px 12px; border-radius:8px; }
+    .suggestions { margin-top: 0.6rem; display:flex; flex-wrap:wrap; gap:0.4rem; }
+    .suggestion-btn { background:#f1f1f1; border:none; padding:6px 12px; border-radius:12px; cursor:pointer; font-size:0.9rem; }
+    .suggestion-btn:hover { background:#e1e1e1; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -211,6 +214,20 @@ with cols[0]:
 with cols[1]:
     st.button("📨 Envia", key="send_button", on_click=send_callback, args=())
 st.markdown("</div>", unsafe_allow_html=True)
+
+# ---------- Suggested questions (only before first message) ----------
+if not st.session_state.messages:
+    st.markdown("<div class='suggestions'>", unsafe_allow_html=True)
+    suggestions = [
+        "Quin és el tema del carrer Papin?",
+        "Qui és la família Batllori?",
+        "Quines són les altres vies de la festa?",
+        "Què hi ha avui al carrer Papin?",
+        "Què hi ha demà al carrer Papin?",
+    ]
+    for i, q in enumerate(suggestions):
+        st.button(q, key=f"sugg_{i}", on_click=send_suggested, args=(q,), use_container_width=False)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 if st.button("🔄 Reiniciar conversa", on_click=reset_conversation):
     pass
