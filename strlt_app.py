@@ -271,3 +271,10 @@ st.markdown("""
     ℹ️ La primera resposta pot trigar fins a <strong>1 minut</strong>
 </div>
 """, unsafe_allow_html=True)
+
+st.markdown(
+    "<small>🤖 Aquesta és una intel·ligència artificial feta per la Festa Major de Sants. "
+    "Pot dir coses errònies o inventades i no ens fem responsables de les respostes. "
+    "Pren-t’ho amb esperit festiu i, si tens dubtes seriosos, pregunta a la comissió! 🎉</small>",
+    unsafe_allow_html=True
+)
