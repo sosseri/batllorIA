@@ -57,7 +57,7 @@ El teu rol és d’assistent classificador. Analitza la pregunta de l’usuari i
     ]
     try:
         chat_completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile", # Un modello veloce per la classificazione
+            model="openai/gpt-oss-20B", # Un modello veloce per la classificazione
             messages=messages,
             temperature=0.0,
         )
