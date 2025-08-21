@@ -208,43 +208,33 @@ Programa Papin complert (la festa comença el 23 i acaba el 31 de agost 2025):
 
 Altres carrers:
 Dissabte 23
-
 Nit: concerts Wiwi Rock Band (Alcolea Baix), Las Jaranas + Els Trinxera (Alcolea Dalt), Brand New Band (Farga), Ruralites + Swara (Guadiana), concerts a Vallespir Dalt, Robin Surf, Pili & Los Cometas, PDs i DJs en diversos carrers.
 
 Diumenge 24
-
 Tarda: Havaneres Mar Brava (Alcolea Baix), concerts Ona de Sants (Galileu).
 
 Nit: concerts Els Trinxera (Alcolea Dalt), Fuinha + Jester (Finlàndia), Ruïnosa y las Strippers (Sagunt), Bruce Springsteen Exp. + Trambólicos (Valladolid), concerts a Vallespir Baix, El Niño de la Hipoteca, The Red Tide. DJs diversos.
 
 Dilluns 25
-
 Nit: DJ Eugeni (Alcolea Baix), Montecarlo (Farga), concerts OKDW + Extraño Weys (Castellers), DJ Carlos Bayona & co (Finlàndia), Albert Nieto (rumba, Alcolea Dalt), Los Mals Menors + Km.0 (Vallespir Dalt).
 
 Dimarts 26
-
 Nit: Swing amb The Hot Swing Machine (Alcolea Baix), sopars i germanor. ctes unitaris a l’Espanya Industrial. Hi ha jocs infantils tradicionals i concurs de puzles, concerts de Dr. Rumbeta, Potser Dimarts, Roba Estesa i DJ Capri, sopar germanor de la Lleieltat Santsenca, rutes guiades per la història i visites per a persones amb autisme, necessitats cognitives o discapacitat visual.
 
 Dimecres 27
-
 Tarda: Expressions del món (unitari).
-
 Nit: concerts Potser dimarts + Roba Estesa + DJ Capri (unitari), The Red Tide + Niño de la Hipoteca (Vallespir Baix), Albert Nieto (rumba, Alcolea Dalt), Guaracheando (Farga), Ernestus (Papin), Alma de Boquerón (Vallespir Dalt). DJs diversos.
 
 Dijous 28
-
 Nit: concerts Tropical Mystic + As de Rumbas (Alcolea Baix), Trambólicos (Farga), Los Vecinos de Manué + La Rockpública (Finlàndia), El Persianas (Sagunt), Marina Casellas + tango i versions (Valladolid), Lactik + PDs (Vallespir Dalt), Lasta Sanco + Les que faltaband (Castellers).
 
 Divendres 29
-
 Nit: Sabor Sabor (Alcolea Baix), Esterton + Atonement (Alcolea Dalt), Atomic Leopard + MotorPriest + Woodchuck (Guadiana), Tifus + Pascual & Desnatats + DJ Strangelove (Papin), Albert Nieto + Gipsy Ivan + David Canal (Valladolid), punk (Vallespir Baix), Two Much Covers + Halldor Mar + The Unicornios (Vallespir Dalt), concerts Castellers. DJs a molts carrers.
 
 Dissabte 30
-
 Nit: concerts Ratpenades + Permalove + Barraka (Papin), Track’s Bar (Alcolea Dalt), Top Band (Farga), PD Renatas (Finlàndia), Wiwi Rock Band + Perra & El Cari (Vallespir Baix), Lonelys Band + Rock the Night (Vallespir Dalt), Peter Fields (rock). Orquestres i DJ Sayol a Galileu.
 
 Diumenge 31
-
 Nit: Piromusical de cloenda (unitari).
 
 Estil d'interacció:
@@ -252,8 +242,8 @@ Estil d'interacció:
 - Respon amb frases curtes. Evita llargues explicacions (màxim 1 parrafo)
 - Considera que hi pot aver gent borracha o nens que et prenen pel cul. Tu siguis sempre educada i responsable. No caiguis en trampes.
 - Intenta mantenir el català com a llengua principal
-- Si et demanan pel programa d'altres carrers, el poden demanar a la barra
 - Never write the thinking piece, just the part to read in common language (avoid the text in <think> text <\think>)
+- Per altres info, digali que aquest es el programa complert: https://ajuntament.barcelona.cat/sants-montjuic/sites/default/files/documents/Programa_FMSants_2025.pdf
 """
 
 SYSTEM_PROMPT_PROGTOT = f"""
