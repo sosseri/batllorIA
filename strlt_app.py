@@ -71,14 +71,15 @@ def process_message(user_message: str):
 
     bot_response = "❌ Error: no response"
     try:
-        response = requests.post(
-            "https://batllori-chat.onrender.com/chat",
-            json={
-                "message": user_message.strip(),
-                "conversation_id": st.session_state.conversation_id
-            },
-            timeout=120  # wait up to 2 minutes
-        )
+        with st.spinner("⏳ Preparing the server… (this may take up to a minute)"):
+            response = requests.post(
+                "https://batllori-chat.onrender.com/chat",
+                json={
+                    "message": user_message.strip(),
+                    "conversation_id": st.session_state.conversation_id
+                },
+                timeout=120  # wait up to 2 minutes
+            )
         data = response.json()
         bot_response = data.get("response", "❌ Error de connexió")
         st.session_state.conversation_id = data.get("conversation_id")
