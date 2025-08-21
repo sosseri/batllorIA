@@ -147,3 +147,8 @@ async def delete_conversation(conversation_id: str):
         del conversations[conversation_id]
         return {"success": True}
     raise HTTPException(status_code=404, detail="Conversa no trobada")
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+    
