@@ -12,7 +12,7 @@ from app.core import (
     SYSTEM_PROMPT, 
     SYSTEM_PROMPT_PROGRAMA, 
     SYSTEM_PROMPT_CARRERS,
-    SYSTEM_PROMPT_TOTPROGR,
+    SYSTEM_PROMPT_PROGTOT,
     SYSTEM_PROMPT_BATLLORI
 )
 
@@ -101,7 +101,7 @@ async def chat_endpoint(req: Request):
         elif category == 'carrers':
             system_prompt = SYSTEM_PROMPT_CARRERS
         elif category == 'programatot':
-            system_prompt = SYSTEM_PROMPT_TOTPROGR
+            system_prompt = SYSTEM_PROMPT_PROGTOT
         elif category == 'batllori':
             system_prompt = SYSTEM_PROMPT_BATLLORI
         else:
