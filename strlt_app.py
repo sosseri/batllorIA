@@ -147,11 +147,11 @@ if not st.session_state.messages:
 #    st.markdown("### 🎭 Benvingut a la Festa de Sants! ")
 #    st.markdown("Pregunta'm qualsevol cosa sobre la festa major del barri.")
     st.markdown("### 🎭 Benvingut a la Festa Major de Sants!")
-    st.markdown("Pots preguntar-me sobre:\n",
-            "- 🎨 El **guarnit** del carrer Papin i com està fet\n",
-            "- 👨‍👩‍👧‍👦 La família **Batllori** i la seva història\n",
-            "- 🏠 Els altres **carrers** que participen i les seves decoracions\n",
-            "- 📅 El **programa** d’activitats al carrer Papin o en altres carrers\n",
+    st.markdown("Pots preguntar-me sobre:\n"
+            "- 🎨 El **guarnit** del carrer Papin i com està fet\n"
+            "- 👨‍👩‍👧‍👦 La família **Batllori** i la seva història\n"
+            "- 🏠 Els altres **carrers** que participen i les seves decoracions\n"
+            "- 📅 El **programa** d’activitats al carrer Papin o en altres carrers\n"
             "- 🙋‍♂️ Com **participar** a la comissió de festes\n"
         )
 
