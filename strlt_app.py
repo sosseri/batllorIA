@@ -229,11 +229,13 @@ if not st.session_state.messages:
     st.markdown("<div class='suggestions'>", unsafe_allow_html=True)
     suggestions = [
         "Quin és el tema del carrer Papin?",
+        "Podries explicar-me el guarnit d’aquest any?",
         "Qui és la família Batllori?",
-        "Quines són les altres vies de la festa?",
+        "Quins són els altres carrers de la festa?",
         "Què hi ha avui al carrer Papin?",
-        "Què hi ha demà al carrer Papin?",
-        "Què hi ha avui a la festa de Sants?"
+        "Què hi ha demà al carrer Papin?"
+        "Què hi ha avui a la Festa Major de Sants?",
+        "Com puc participar a la comissió de festes?"
     ]
     for i, q in enumerate(suggestions):
         st.button(q, key=f"sugg_{i}", on_click=send_suggested, args=(q,), use_container_width=False)
