@@ -73,7 +73,7 @@ def process_message(user_message: str):
     try:
         # create a space to place the waiting message
         spinner_placeholder = st.empty()
-        with st.spinner("⏳ La primera interaccio pot trigar fins a 1 minut... perdona l'espera!"):
+        with st.spinner("⏳ ❗La primera interacció pot trigar fins a 1 minut❗️ Perdona l'espera!"):
             response = requests.post(
                 "https://batllori-chat.onrender.com/chat",
                 json={
@@ -143,8 +143,7 @@ st.markdown("""
 
 # ---------- WELCOME ----------
 if not st.session_state.messages:
-    st.markdown("<small>❗La primera interacció pot trigar fins a 1 minut❗️</small>", unsafe_allow_html=True)
-
+#    st.markdown("<small>❗La primera interacció pot trigar fins a 1 minut❗️</small>", unsafe_allow_html=True)
     st.markdown("### 🎭 Benvingut a la Festa de Sants! ")
     st.markdown("Pregunta'm qualsevol cosa sobre la festa major del barri.")
 
@@ -276,14 +275,51 @@ if st.session_state.processing:
 # ---------- Footer note ----------
 st.markdown("""
 <div class='footer-note'>
-    🔊 Clica l'altaveu per escoltar les respostes • 
-    ℹ️ La primera resposta pot trigar fins a <strong>1 minut</strong>
+    🔊 Clica l'altaveu per escoltar les respostes 🔊
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown(
-    "<small>🤖 Aquesta és una intel·ligència artificial feta per la Festa Major de Sants. 🎉"
-    "🕵️ Pot generar informació incorrecta i no ens fem responsables de l’ús inadequat que en puguin fer adults massa esverats o criatures 🎈."
-    "🍻 Pren-t’ho amb esperit festiu 🍻 i, si tens dubtes seriosos, pregunta a la comissió! 🎉</small>",
-    unsafe_allow_html=True
-)
+import streamlit as st
+
+st.markdown("""
+<style>
+.disclaimer-card{
+  border-radius: 16px;
+  padding: 14px 16px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.5));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  margin: 8px 0 18px 0;
+}
+.disclaimer-title{
+  display:flex; gap:.5rem; align-items:center;
+  font-weight: 700; font-size: .95rem; margin: 0 0 6px 0;
+}
+.disclaimer-text{
+  font-size: .85rem; line-height: 1.4; margin: 0;
+}
+
+/* Modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .disclaimer-card{
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+    border: 1px solid rgba(255,255,255,.18);
+    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+    position: sticky; bottom: 8px; z-index: 999;
+  }
+}
+</style>
+
+<div class="disclaimer-card">
+  <div class="disclaimer-title">🤖 Avis de la festa</div>
+  <p class="disclaimer-text">
+    Aquesta és una intel·ligència artificial feta per la Festa Major de Sants. 🎉
+    🕵️ Pot generar informació incorrecta i no ens fem responsables de l’ús inadequat
+    que en puguin fer adults massa esverats o criatures 🎈.
+    🍻 Pren-t’ho amb esperit festiu i, si tens dubtes seriosos, pregunta a la comissió! 🍻
+  </p>
+</div>
+""", unsafe_allow_html=True)
+
