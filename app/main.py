@@ -79,38 +79,48 @@ def get_prompt_category_with_history(user_input: str, conversation_history: List
     Classifica l'input de l'usuari per determinar quin prompt usar.
     Ara usa també l'historial de preguntes per donar més context.
     """
-    # We give the all the past user questions in order
-    user_questions = [
-        f"Pregunta {i+1}: {msg['content']}"
-        for i, msg in enumerate(conversation_history)
+    # Past questions (only questions) of user
+    past_questions = [
+        f"- {msg['content']}"
+        for msg in conversation_history
         if msg["role"] == "user"
-    ]
-    # We add the final question
-    user_questions.append(f"Pregunta {len(user_questions)+1}: {user_input}")
+        ]
+    # divide past and current question
+    user_message = "Preguntes anteriors (només per context, si cal):\n"
+    if past_questions:
+        user_message += "\n".join(past_questions[:-1]) + "\n\n"
+    else:
+        user_message += "(cap)\n\n"
+    user_message += f"Pregunta actual (classifica aquesta):\n{user_input}"
 
+    
     messages = [
         {
             "role": "system",
             "content": """Ets un agent de la Batllor-IA, la intel·ligència artificial de la família Batllori, històrics ceramistes del barri de Sants a Barcelona.
-Estàs a la Festa Major de Sants al carrer Papin i la gent et fa preguntes.
-
-El teu rol és d’assistent classificador. Analitza la pregunta de l’usuari i respon NOMÉS amb una de les set opcions següents, sense text addicional:
-
-- 'Programa': si la pregunta està relacionada amb el programa de la festa al carrer Papin (horaris o activitats). Si et demanen què hi ha *avui*, *demà* o en algun moment al carrer Papin, és aquesta opció.
-- 'ProgramaTot': si la pregunta està relacionada amb el programa en un altre carrer o amb el programa general de la festa.
-- 'Carrers': si la pregunta està relacionada amb la decoració d’altres carrers o amb quins carrers participen.
-- 'Batllori': si la pregunta està relacionada amb la família Batllori, la seva història o el seu negoci a Sants.
-- 'Guarnit': si la pregunta demana un tour al carrer o informació tècnica sobre el guarnit o la decoració del carrer Papin (com està fet, materials, construcció, muntatge, etc.).
-- 'Participar': si la pregunta és sobre la comissio de festes o com es pot col·laborar o participar a la comissió de festes del carrer Papin.
-- 'Estàndard': per a preguntes sobre la temàtica o la decoració del carrer Papin en general, o qualsevol altre tema (història, ceràmica, salutacions, Sants, etc.). En cas de dubte, tria 'Estàndard'.
-
-⚠️ Nota: si et demanen què hi ha “al carrer” sense especificar quin, sempre es refereixen al carrer Papin.
-
-"""
+                Estàs a la Festa Major de Sants al carrer Papin i la gent et fa preguntes.
+                
+                El teu rol és d’assistent classificador. Has de classificar NOMÉS l’última pregunta de l’usuari. 
+                Les preguntes anteriors només s’han d’utilitzar si són necessàries per entendre referències 
+                com “i aquest carrer?”, “i demà?”, “i de Galileu?”. 
+                Si la darrera pregunta ja s’entén per si sola, ignora les anteriors.
+                Analitza la pregunta de l’usuari i respon NOMÉS amb una de les set opcions següents, sense text addicional:
+                
+                - 'Programa': si la pregunta està relacionada amb el programa de la festa al carrer Papin (horaris o activitats). Si et demanen què hi ha *avui*, *demà* o en algun moment al carrer Papin, és aquesta opció.
+                - 'ProgramaTot': si la pregunta està relacionada amb el programa en un altre carrer o amb el programa general de la festa.
+                - 'Carrers': si la pregunta està relacionada amb la decoració d’altres carrers o amb quins carrers participen.
+                - 'Batllori': si la pregunta està relacionada amb la família Batllori, la seva història o el seu negoci a Sants.
+                - 'Guarnit': si la pregunta demana un tour al carrer o informació tècnica sobre el guarnit o la decoració del carrer Papin (com està fet, materials, construcció, muntatge, etc.).
+                - 'Participar': si la pregunta és sobre la comissio de festes o com es pot col·laborar o participar a la comissió de festes del carrer Papin.
+                - 'Estàndard': per a preguntes sobre la temàtica o la decoració del carrer Papin en general, o qualsevol altre tema (història, ceràmica, salutacions, Sants, etc.). En cas de dubte, tria 'Estàndard'.
+                
+                ⚠️ Nota: si et demanen què hi ha “al carrer” sense especificar quin, sempre es refereixen al carrer Papin.
+                
+                """
         },
         {
             "role": "user",
-            "content": "\n".join(user_questions)
+            "content": user_message
         }
     ]
     try:
@@ -120,10 +130,10 @@ El teu rol és d’assistent classificador. Analitza la pregunta de l’usuari i
             temperature=0.0,
         )
         category = chat_completion.choices[0].message.content.strip().replace("'", "").lower()
-        print(f"Input utente: '{user_input}' -> Categoria classificata: '{category}'")
+        print(f"Input usuari: '{user_input}' -> Categoria: '{category}'")
         return category
     except Exception as e:
-        print(f"Errore durante la classificazione: {e}")
+        print(f"Error durant la classificació: {e}")
         return "estàndard"
 
 
