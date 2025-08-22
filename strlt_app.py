@@ -71,7 +71,9 @@ def process_message(user_message: str):
 
     bot_response = "❌ Error: no response"
     try:
-        with st.spinner("⏳ Preparing the server… (this may take up to a minute)"):
+        # create a space to place the waiting message
+        spinner_placeholder = st.empty()
+        with st.spinner("⏳ La primera interaccio pot trigar fins a 1 minut... perdona l'espera!"):
             response = requests.post(
                 "https://batllori-chat.onrender.com/chat",
                 json={
@@ -86,6 +88,9 @@ def process_message(user_message: str):
         bot_response = re.sub(r"<think.*?>.*?</Thinking>", "", bot_response, flags=re.DOTALL | re.IGNORECASE)
     except Exception as e:
         bot_response = f"❌ Error: {str(e)}"
+    finally: 
+        # 👇 clear spinner when done 
+        spinner_placeholder.empty()
 
     st.session_state.messages.append({
         "id": uuid.uuid4().hex,
