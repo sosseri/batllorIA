@@ -125,7 +125,7 @@ def get_prompt_category_with_history(user_input: str, conversation_history: List
     ]
     try:
         chat_completion = client.chat.completions.create(
-            model="openai/gpt-oss-20B",
+            model="openai/gpt-oss-120b",
             messages=messages,
             temperature=0.0,
         )
