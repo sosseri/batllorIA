@@ -13,7 +13,9 @@ from app.core import (
     SYSTEM_PROMPT_PROGRAMA, 
     SYSTEM_PROMPT_CARRERS,
     SYSTEM_PROMPT_PROGTOT,
-    SYSTEM_PROMPT_BATLLORI
+    SYSTEM_PROMPT_BATLLORI,
+    SYSTEM_PROMPT_PARTICIPAR,
+    SYSTEM_PROMPT_GUARNIT
 )
 
 # Inizializza il client Groq qui per la classificazione
@@ -38,13 +40,15 @@ def get_prompt_category(user_input: str) -> str:
             "content": """Ets un agent de la Batllor-IA, la intel·ligència artificial de la família Batllori, històrics ceramistes del barri de Sants a Barcelona.
 Estàs a la Festa Major de Sants al carrer Papin i la gent et fa preguntes.
 
-El teu rol és d’assistent classificador. Analitza la pregunta de l’usuari i respon NOMÉS amb una de les cinc opcions següents, sense text addicional:
+El teu rol és d’assistent classificador. Analitza la pregunta de l’usuari i respon NOMÉS amb una de les set opcions següents, sense text addicional:
 
 - 'Programa': si la pregunta està relacionada amb el programa de la festa al carrer Papin (horaris o activitats). Si et demanen què hi ha *avui*, *demà* o en algun moment al carrer Papin, és aquesta opció.
-- 'ProgramaTot': si la pregunta està relacionada amb el programa en un altre carrer, a tots els carrers, o amb el programa general de la festa.
+- 'ProgramaTot': si la pregunta està relacionada amb el programa en un altre carrer o amb el programa general de la festa.
 - 'Carrers': si la pregunta està relacionada amb la decoració d’altres carrers o amb quins carrers participen.
 - 'Batllori': si la pregunta està relacionada amb la família Batllori, la seva història o el seu negoci a Sants.
-- 'Estàndard': per a preguntes sobre la temàtica o la decoració del carrer Papin, o qualsevol altre tema (història, ceràmica, salutacions, Sants, etc.). En cas de dubte, tria 'Estàndard'.
+- 'Guarnit': si la pregunta demana un tour al carrer o informació tècnica sobre el guarnit o la decoració del carrer Papin (com està fet, materials, construcció, muntatge, etc.).
+- 'Participar': si la pregunta és sobre la comissio de festes o com es pot col·laborar o participar a la comissió de festes del carrer Papin.
+- 'Estàndard': per a preguntes sobre la temàtica o la decoració del carrer Papin en general, o qualsevol altre tema (història, ceràmica, salutacions, Sants, etc.). En cas de dubte, tria 'Estàndard'.
 
 ⚠️ Nota: si et demanen què hi ha “al carrer” sense especificar quin, sempre es refereixen al carrer Papin.
 
@@ -104,6 +108,10 @@ async def chat_endpoint(req: Request):
             system_prompt = SYSTEM_PROMPT_PROGTOT
         elif category == 'batllori':
             system_prompt = SYSTEM_PROMPT_BATLLORI
+        elif category == 'guarnit':
+            system_prompt = SYSTEM_PROMPT_GUARNIT
+        elif category == 'participar':
+            system_prompt = SYSTEM_PROMPT_PARTICIPAR
         else:
             system_prompt = SYSTEM_PROMPT
         
