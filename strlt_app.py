@@ -136,7 +136,7 @@ st.markdown("""
 st.markdown("""
 <div class="main-header">
     <h1>💬 Xat amb BatllorIA</h1>
-    <h2>La Intel•ligència Artificial de la família Batllori</h2>
+    <h2>La Intel·ligència Artificial de la família Batllori</h2>
     <div class="badge">🎉 Festa Major de Sants 2025 🎉</div>
 </div>
 """, unsafe_allow_html=True)
