@@ -332,3 +332,5 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+st.markdown("🇵🇸 **La Comissió del carrer Papin** és fermament contrària al genocidi a Palestina — aturem el genocidi. 🍉")
+
