@@ -44,7 +44,7 @@ El teu rol és d’assistent classificador. Analitza la pregunta de l’usuari i
 
 - 'Programa': si la pregunta està relacionada amb el programa de la festa al carrer Papin (horaris o activitats). Si et demanen què hi ha *avui*, *demà* o en algun moment al carrer Papin, és aquesta opció.
 - 'ProgramaTot': si la pregunta està relacionada amb el programa en un altre carrer o amb el programa general de la festa.
-- 'Carrers': si la pregunta està relacionada amb la decoració d’altres carrers o amb quins carrers participen.
+- 'Carrers': si la pregunta està relacionada amb la decoració d’altres carrers o amb quins carrers participen o a quina posició han arrivat els carrers al concurs de guarnit de la festa.
 - 'Batllori': si la pregunta està relacionada amb la família Batllori, la seva història o el seu negoci a Sants.
 - 'Guarnit': si la pregunta demana un tour al carrer o informació tècnica sobre el guarnit o la decoració del carrer Papin (com està fet, materials, construcció, muntatge, etc.).
 - 'Participar': si la pregunta és sobre la comissio de festes o com es pot col·laborar o participar a la comissió de festes del carrer Papin.
