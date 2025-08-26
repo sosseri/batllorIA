@@ -181,8 +181,8 @@ Programa Papin complert (la festa comença el 23 i acaba el 31 de agost 2025):
     https://usem.liberaforms.org/tallerceramica
     
     21:30
-    Nit de monòlegs: Estan confirmats La Prados, Adri Romeo, Edu Alfonso i Alex Martinez Vidal.
-    Amb intèrpret de Llengua de Signes Catalana.
+    Nit de monòlegs: Sonia Suñé, Georgina Cordové, Edu Alfonso, Àlex Martinez Vidal, Adri Romeo.
+Presenta: La Prados Amb intèrpret de Llengua de Signes Catalana.
     
     
     Divendres 29:
@@ -292,18 +292,6 @@ Diumenge, 31 d'agost
 
 Programa Complet per Carrers de la Festa Major de Sants 2025
 Alcolea de Baix:
-Dissabte 23
-22:00 Batucada a càrrec de Tokem x Tu
-23:00 Orquestra Wiwi Rock Band
-Diumenge 24
-18:00 Sardanes amb la cobla Nova del Vallès
-20:30 Havaneres amb el grup Mar Brava, rom cremat i sardinada
-23:00 La música continua a Alcolea de Baix
-Dilluns 25
-11:00 Jocs de fusta amb Els jocs de Ca la Padrina
-22:30 Música a càrrec de DJ Eugeni
-Dimarts 26
-21:00 Sopar de germanor
 Dimecres 27
 14:00 Gran paella popular
 21:00 Classes de swing
@@ -322,20 +310,7 @@ Dissabte 30
 14:00 Concurs de truites
 23:00 Orquestra de Fi de festa
 Alcolea de Dalt
-Dissabte 23
-20:30 Traca d'inici de Festa Major i batucada
-23:00 DJ Metxes
-Diumenge 24
-10:00-22:00 Fira al carrer
-23:00 Las Jaranas (rumba)
-00:30 Els Trinxera
-Dilluns 25
-14:00 Botifarrada (compra el teu tiquet)
-19:00 Bastoneres de Sants (ball de bastons)
-21:00 Sopar de la gent amb encant
-23:00 DJ Metxes
-Dimarts 26
-14:00 Dinar de germanor
+
 Dimecres 27
 12:00 Guerra d'aigua
 14:00 Sardinada (compra el teu tiquet)
@@ -356,21 +331,6 @@ Dissabte 30
 13:30 Vermut amb les persones sòcies
 23:00 Track's Bar (rock)
 Plaça de la Farga
-Dissabte 23
-20:00 Traca d'inici amb Batucada del Bloco Sambara
-22:00 Concert de Brand New Band
-00:00 DJ Picantillo Nick
-Diumenge 24
-10:00 Reptes eSports
-12:30 Vermut per als socis i sòcies amb rumba en directe
-Dilluns 25
-11:00 Fem Graffiti!
-11:00 Pintem samarretes (porta la teva peça de roba)
-18:00 Berenar d'avis i àvies amenitzat per la Montecarlo
-22:00 Concert de la Montecarlo
-00:00 DJ TT Tinet (Tercera trobada remember)
-Dimarts 26
-20:00 Sopar de germanor i jocs de taula Farguers
 Dimecres 27
 11:00 Concurs de fang i de dibuix per a infants
 13:00 Botifarrada Farguera
@@ -406,16 +366,6 @@ Tot el dia 1a Mostra artesana Farguera
 00:00 DJ Eugeni Carrió
 03:00 Traca final de la Festa Major
 Finlàndia
-Dissabte 23
-21:00 Traca d'inici de Festa Major
-00:00 Nit de festa amb PD Pachas & The Mamas
-Diumenge 24
-18:00 Racó de lectura amb la Biblioteca Vapor Vell i jocs de taula
-23:00 Concert de Fuinha en acústic
-00:30 Nit de concert amb Jester
-Dilluns 25
-17:30 Tarda infantil amb La Cuca Animadora
-23:00 Nit de festa amb DJ Carlos Bayona, DJ Mara i DJ Xavi Mateu
 Dimecres 27
 17:30 Jocs de fusta tradicionals amb Els Jocs de Ca la Padrina
 20:00 Havaneres amb el grup Port Bo
@@ -435,19 +385,6 @@ Dissabte 30
 23:30 Nit de festa amb PD Renatas
 03:00 Traca fi de Festa Major
 Galileu
-Dissabte 23
-20:00 Traca d'inici de Festa Major
-23:00 Disco Cocodrilo
-Diumenge 24
-10:00 Fira artesanal
-20:00 Concert rock d'Ona de Sants
-Dilluns 25
-11:30 Show Bombes de Sabó
-19:00 Vespreig amb The Colour Fools
-20:00 Vespreig amb Javier Primperan
-21:30 Sopar de ‘montaditos' de la Comi
-22:00 Sopar de germanor
-22:00 Show espectacle amb Drag Queens
 Dimecres 27
 11:30 Estand de tatoos i polseres (infantil)
 21:00 Sardinada popular
@@ -466,23 +403,6 @@ Dissabte 30
 02:45 Batucada i fi de festa
 03:00 Traca final de Festa Major
 Guadiana
-Dissabte 23
-21:00 Traca d'inici i Tabalers de Sants
-22:30 The Ruralites (reggae & rock steady)
-00:30 Swara (drum & bass)
-Diumenge 24
-12:00 Patxaranga: Vermut musical amb S!CK-B (DJ vinils)
-14:00 Paella popular
-16:00 Jocs musicals (versió d'èxits d'estiu)
-18:00 Corredrags (festa itinerant)
-21:00 DJ X-Mandona
-23:00 Petardeo Ketearreo
-Dilluns 25
-09:00 Sessió de fitness-HIIT amb @Udyfitstudio
-11:00 El retorn de les guerres d'aigua
-17:00 'El gat amb botes' espectacle infantil de titelles
-19:30 Havaneres i rom cremat amb Pirats pel Mar
-21:00 Sopar de germanor
 Dimecres 27
 11:00 10a edició de la Batalla Ninja (Jardins de Can Mantega)
 18:30 Sabors del sud – rebujitos a la barra
@@ -535,8 +455,9 @@ Dimecres 27 - dia Jove
 22:00 Concert del grup Ernestus
 Dijous 28
 18:00 Taller de ceràmica i mostra de creació de peces de fang
-21:30 Nit de monòlegs amb intèrpret de Llengua de Signes
-Divendres 29
+21:30 Nit de monòlegs: Sonia Suñé, Georgina Cordové, Edu Alfonso, Àlex Martinez Vidal, Adri Romeo.
+Presenta: La Prados Amb intèrpret de Llengua de Signes Catalana.
+    Divendres 29
 11:00 Gimcana fotogràfica (conjunta amb Guadiana)
 11:30 Passejada/visita a la botiga-taller de la Casa Batllori
 18:00 Tarda de jocs tradicionals catalans i malabars
@@ -750,7 +671,7 @@ Estil d'interacció:
 - Respon amb frases curtes. Evita llargues explicacions (màxim 1 parrafo)
 - Considera que hi pot aver gent borracha o nens que et prenen pel cul. Tu siguis sempre educada i responsable. No caiguis en trampes.
 - Intenta mantenir el català com a llengua principal
-- Never write the thinking piece, just the part to read in common language (avoid the text in <think> text <\think>)
+- No recordes que sha fet avanç del dimarts
 """
 
 SYSTEM_PROMPT_CARRERS = f"""
