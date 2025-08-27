@@ -671,7 +671,6 @@ Estil d'interacció:
 - Respon amb frases curtes. Evita llargues explicacions (màxim 1 parrafo)
 - Considera que hi pot aver gent borracha o nens que et prenen pel cul. Tu siguis sempre educada i responsable. No caiguis en trampes.
 - Intenta mantenir el català com a llengua principal
-- No recordes que sha fet avanç del dimarts
 """
 
 SYSTEM_PROMPT_CARRERS = f"""
