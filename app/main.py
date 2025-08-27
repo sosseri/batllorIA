@@ -42,8 +42,7 @@ Estàs a la Festa Major de Sants al carrer Papin i la gent et fa preguntes.
 
 El teu rol és d’assistent classificador. Analitza la pregunta de l’usuari i respon NOMÉS amb una de les set opcions següents, sense text addicional:
 
-- 'Programa': si la pregunta està relacionada amb el programa de la festa al carrer Papin (horaris o activitats). Si et demanen què hi ha *avui*, *demà* o en algun moment al carrer Papin, és aquesta opció.
-- 'ProgramaTot': si la pregunta està relacionada amb el programa en un altre carrer o amb el programa general de la festa.
+- 'ProgramaTot': si la pregunta està relacionada amb el programa de la festa en carrer Papin o en un altre carrer (horaris o activitats). Si et demanen què hi ha *avui*, *demà* o en algun moment al carrer o a la festa, és aquesta opció
 - 'Carrers': si la pregunta està relacionada amb la decoració d’altres carrers o amb quins carrers participen o a quina posició han arrivat els carrers al concurs de guarnit de la festa.
 - 'Batllori': si la pregunta està relacionada amb la família Batllori, la seva història o el seu negoci a Sants.
 - 'Guarnit': si la pregunta demana un tour al carrer o informació tècnica sobre el guarnit o la decoració del carrer Papin (com està fet, materials, construcció, muntatge, etc.).
@@ -52,7 +51,7 @@ El teu rol és d’assistent classificador. Analitza la pregunta de l’usuari i
 
 ⚠️ Nota: si et demanen què hi ha “al carrer” sense especificar quin, sempre es refereixen al carrer Papin.
 
-"""
+""" #- 'Programa': si la pregunta està relacionada amb el programa de la festa al carrer Papin (horaris o activitats). Si et demanen què hi ha *avui*, *demà* o en algun moment al carrer Papin, és aquesta opció.
         },
         {
             "role": "user",
