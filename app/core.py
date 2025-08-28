@@ -256,9 +256,9 @@ Avui es el dia {today}.
 
 Programa Unitari
 Dissabte, 23 d'agost
-11:00 - 13:00: Assaig "El drac de la bona sort" (Recorregut des d'Av. Josep Tarradellas fins a Cotxeres de Sants).
-19:00: Cercavila de Festa Major (Des de Cotxeres de Sants fins al Parc de l'Espanya Industrial).
-19:00: Balls i lluïments de les colles de cultura popular (Des de Cotxeres de Sants fins al Parc de l'Espanya Industrial).
+11:00 - 13:00: Assaig "El drac de la bona sort"
+19:00: Cercavila de Festa Major
+19:00: Balls i lluïments de les colles de cultura popular
 20:00: Pregó de Festa Major a càrrec de La Calòrica (Parc de l'Espanya Industrial).
 Diumenge, 24 d'agost
 11:30: Repic manual de campanes (Església de Santa Maria de Sants).
@@ -298,10 +298,6 @@ Diumenge, 31 d'agost
 Programa Complet per Carrers de la Festa Major de Sants 2025 (23-31 Agost):
 
 Alcolea de Baix:
-Dimecres 27
-14:00 Gran paella popular
-21:00 Classes de swing
-22:30 Swing amb The Hot Swing Machine
 Dijous 28
 12:00 Jocs de ciència
 18:00 Xocolatada popular
@@ -317,12 +313,8 @@ Dissabte 30
 23:00 Orquestra de Fi de festa
 
 Alcolea de Dalt
-Dimecres 27
-12:00 Guerra d'aigua
-14:00 Sardinada (compra el teu tiquet)
-23:00 Albert Nieto (rumba)
 Dijous 28
-14:00 Fideuà (compra el teu tiquet)
+14:00 Dinar: Fideuà (compra el teu tiquet)
 18:00 Ball en línia
 23:00 Miquel Cubero (versions)
 Divendres 29
@@ -373,10 +365,6 @@ Tot el dia 1a Mostra artesana Farguera
 03:00 Traca final de la Festa Major
 
 Finlàndia
-Dimecres 27
-17:30 Jocs de fusta tradicionals amb Els Jocs de Ca la Padrina
-20:00 Havaneres amb el grup Port Bo
-23:30 Nit de festa amb DJ Giuseppe Maw
 Dijous 28
 11:30 Patxanga de futbol
 17:00 Xocolatada infantil
@@ -393,10 +381,6 @@ Dissabte 30
 03:00 Traca fi de Festa Major
 
 Galileu
-Dimecres 27
-11:30 Estand de tatoos i polseres (infantil)
-21:00 Sopar Sardinada popular
-23:00 Duet de Nacho Romero i David Palau
 Dijous 28
 11:30 Bombolles i ball
 19:00 Havaneres i rom amb el Grup Folk Montjuïc
@@ -412,13 +396,6 @@ Dissabte 30
 03:00 Traca final de Festa Major
 
 Guadiana
-Dimecres 27
-11:00 10a edició de la Batalla Ninja (Jardins de Can Mantega)
-18:30 Sabors del sud – rebujitos a la barra
-19:00 Taller de salsa amb Ritmos Barcelona
-20:00 El Combo de la Brava (salsa/ritmes llatins)
-22:00 La Fibra Subtropical (salsa/ritmes llatins)
-00:00 Josepe de Pueblo (DJ)
 Dijous 28
 10:30 Campionat de dobles d'escacs
 17:30 Brodat-electro: Taller de collage i brodat
@@ -480,12 +457,6 @@ Dissabte 30
 01:00 Concert de la Barraka
 
 Sagunt
-Dimecres 27
-18:00 Concurs de dolços
-18:30 Jocs de taula amb l'Associació Lúdica Sants-Niggurath
-18:30 Música al descobert amb el Col·lectiu d'Artistes de Sants
-21:00 Sopar Fideuà popular
-23:00 Nit de monòlegs amb Sants for Laughs
 Dijous 28
 11:00 Taller infantil de fang
 18:30 Havaneres amb el grup Barca de Mitjana
@@ -506,12 +477,6 @@ Dissabte 30
 03:00 Traca fi de Festa Major
 
 Valladolid
-Dimecres 27
-18:00 Visita guiada al nostre carrer
-19:00 Taller de primers auxilis
-20:00 Nit catalana: Sopar de pintxos
-21:30 Havaneres amb Els Pescadors de l'Escala
-23:00 Concert de Marina Casellas
 Dijous 28
 09:00 Vintage Market al carrer
 18:00 Visita guiada al nostre carrer
@@ -531,14 +496,6 @@ Dissabte 30
 19:00 Xocolatada i berenar per als nostres avis
 
 Vallespir de Baix
-Dimecres 27
-12:30 Vermutet musical amb Cobla La Principal del Llobregat
-Tot el dia
-Botifarrada (menjar): Celebració del 15è aniversari
-17:30 Sardanes amb La Principal del Llobregat
-21:30 El Niño de la Hipoteca
-23:00 The Red Tide
-00:30 Grup sorpresa
 Dijous 28
 Tot el dia
 Fira d'artesania i alimentació
@@ -558,11 +515,6 @@ Dissabte 30
 01:00 Concert de la Perra & El Cari
 
 Vallespir de Dalt
-Dimecres 27
-11:00 Animació infantil amb Miki Clown
-17:00 Berenar per als avis i àvies
-20:00 Nit de rumba: Havaneres amb el Grup Montjuïc i rom cremat
-23:00 Nit de rumba amb Alma de Boquerón
 Dijous 28
 Tot el dia
 Mercat al carrer
@@ -583,23 +535,19 @@ Dissabte 30
 03:00 Traca final de Festa Major
 
 Castellers de Sants
-Dimecres 27
-18:30  Taller de castells per a menuts i grans
-19:30 Assaig casteller al carrer*
-23:00 Concerts amb Miquel del Roig i DJ Coronitas*
 Dijous 28
 18:30 Tast de síndria i meló per als més petits
 19:00 Animació infantil a càrrec de Jaume Barri
-22:30 Concerts amb Lasta Sanco i Les que faltaband*
+22:30 Concerts amb Lasta Sanco i Les que faltaband
 Divendres 29
 17:30 Torneig de futbolin
-20:00 Assaig casteller al carrer*
+20:00 Assaig casteller al carrer
 23:00 Concert
 
 Context i altres informacions:
 - Aqui el programa de la festa: https://ajuntament.barcelona.cat/sants-montjuic/ca/festa-major-de-sants
 - La Festa Major de Sants 2025 es de 23 a 31 de Agost
-- No et recordes que hi hagut als carrers desde el 23 fins el 27 (només ho saps per Papin i pels actes unitaris).
+- No et recordes que hi hagut als carrers desde el 23 fins el 28 (només ho saps per Papin i pels actes unitaris).
 - Hi ha dos concursos de guarnits:
     - Al concurs oficial de la festa vam arrivar al podium en 3ra posicio, després del carrer Valladolid (1er), i carrer Finlandia (2n).
     - Pel concurs de Sants3Radio (dissabte 30) es pot votar pel millor carrer trucant al 932981919. Que votin per nosaltres si els ha agradat el carrer.
