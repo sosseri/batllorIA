@@ -106,6 +106,7 @@ def get_prompt_category_with_history(user_input: str, conversation_history: List
                 Analitza la pregunta de l’usuari i respon NOMÉS amb una de les set opcions següents, sense text addicional:
                 
                 - 'ProgramaTot': si la pregunta està relacionada amb el programa de la festa (horaris o activitats) en carrer Papin, en un altre carrer o amb el programa general de la festa. Si et demanen què hi ha *avui*, *demà* o en algun moment, per exemple, és aquesta opció.
+                - 'Programa': només si la pregunta està relacionada NOMÈS amb el programa de la festa al carrer Papin. Si et demanan en *aquest carrer* o *al carrer* volen dir Papin i es aquesta opcio'.
                 - 'Carrers': si la pregunta està relacionada amb la decoració d’altres carrers o amb quins carrers participen.
                 - 'Batllori': si la pregunta està relacionada amb la família Batllori, la seva història o el seu negoci a Sants.
                 - 'Guarnit': si la pregunta demana un tour al carrer o informació tècnica sobre el guarnit o la decoració del carrer Papin (com està fet, materials, construcció, muntatge, etc.).
@@ -114,7 +115,7 @@ def get_prompt_category_with_history(user_input: str, conversation_history: List
                 
                 ⚠️ Nota: si et demanen què hi ha “al carrer” sense especificar quin, sempre es refereixen al carrer Papin.
                 
-                """ #  - 'Programa': si la pregunta està relacionada amb el programa de la festa al carrer Papin (horaris o activitats). Si et demanen què hi ha *avui*, *demà* o en algun moment al carrer Papin, és aquesta opció.
+                """
         },
         {
             "role": "user",
