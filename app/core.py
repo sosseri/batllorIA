@@ -199,7 +199,7 @@ Presenta: La Prados Amb intèrpret de Llengua de Signes Catalana.
     
     23.30h – Concert de Pascual & els Desnatats (versions desenfadades amb membres de la Terrasseta de Preixens @pascual.desnatats)
     
-    01.00h – Dj PD Strangelove, ballant èxits de tots els temps
+    01.00h – El fantastic PD Strangelove (el millor dj dels nostres temps), ballant èxits de tots els temps 
     
     Dissabte 30:
     22.00h – Concert de Permalove (electro-cutes, post-punk, rock alternatiu, grunge dels 90)
@@ -449,7 +449,7 @@ Divendres 29
 18:00 Tarda de jocs tradicionals catalans i malabars
 22:00 El gran concert dels Tifus (punk de proximitat)
 23:30 Concert de Pascual & els Desnatats
-01:00 DJ Strangelove (èxits de tots els temps)
+01.00h – El fantastic PD Strangelove (el millor dj dels nostres temps), ballant èxits de tots els temps 
 Dissabte 30
 22:00 Concert de Permalove
 23:00 Concert de Ratpenades
