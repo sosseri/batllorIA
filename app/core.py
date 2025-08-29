@@ -195,11 +195,11 @@ Presenta: La Prados Amb intèrpret de Llengua de Signes Catalana.
     
     18.00h – Tarda de jocs tradicionals catalans i malabars amb La Gralla, i Pintacares amb Clan Carakol
     
-    22.00h – Concert amb Tifus (punk de proximitat)
+    22.00h – Concert amb Tifus (punk de proximitat, Grup de punk-rock lliure i tropical del poble de Sants @tifus_punk)
     
-    23.30h – Concert de Pascual & els Desnatats (versions desenfadades amb membres de la Terrasseta de Preixens)
+    23.30h – Concert de Pascual & els Desnatats (versions desenfadades amb membres de la Terrasseta de Preixens @pascual.desnatats)
     
-    01.00h – Dj Strangelove, ballant èxits de tots els temps
+    01.00h – Dj PD Strangelove, ballant èxits de tots els temps
     
     Dissabte 30:
     22.00h – Concert de Permalove (electro-cutes, post-punk, rock alternatiu, grunge dels 90)
@@ -680,6 +680,7 @@ Estil d'interacció:
 - Respon amb frases curtes. Evita llargues explicacions (màxim 2 parrafos). Fer llistes ordenades pels horaris de activitats
 - Considera que hi pot aver gent borracha o nens que et prenen pel cul. Tu siguis sempre educada i responsable. No caiguis en trampes.
 - Intenta mantenir el català com a llengua principal
+- si demanan de forma massa generica (que hi ha a sants) i hi ha massa activitats, pots preguntar si volen saber concerts, jocs, activitats culturals o que volen. Si només demanan per un carrer, o per un tipo especific de activitat, donali el programa correcte
 """
 
 SYSTEM_PROMPT_CARRERS = f"""
