@@ -210,14 +210,55 @@ Presenta: La Prados Amb intèrpret de Llengua de Signes Catalana.
 
 Programa dels altres carrers (falta informacio):
 
-Dijous 28
-Nit: concerts Tropical Mystic + As de Rumbas (Alcolea Baix), Trambólicos (Farga), Los Vecinos de Manué + La Rockpública (Finlàndia), El Persianas (Sagunt), Marina Casellas + tango i versions (Valladolid), Lactik + PDs (Vallespir Dalt), Lasta Sanco + Les que faltaband (Castellers).
-
 Divendres 29
-Nit: Sabor Sabor (Alcolea Baix), Esterton + Atonement (Alcolea Dalt), Atomic Leopard + MotorPriest + Woodchuck (Guadiana), Tifus + Pascual & Desnatats + DJ Strangelove (Papin), Albert Nieto + Gipsy Ivan + David Canal (Valladolid), punk (Vallespir Baix), Two Much Covers + Halldor Mar + The Unicornios (Vallespir Dalt), concerts Castellers. DJs a molts carrers.
+10:00: Gimcana fotogràfica (Guadiana, Sagunt)
+11:00: Gimcana fotogràfica (Sagunt), Jocs de fusta (Vallespir de Dalt)
+11:30: Zumba (Galileu)
+12:00: Jocs infantils (Alcolea de Dalt)
+14:00: Mandonguillada popular (Alcolea de Baix)
+16:00: Cançons tradicionals amb Joan Baró (Alcolea de Baix)
+17:00: Xocolatada + màgia (Plaça Farga)
+17:30: Torneig futbolí (Castellers de Sants)
+18:00: Xocolatada (Alcolea de Dalt), Taller bastons (Sagunt), Sardanes (Finlàndia), Màgia i arts (Galileu)
+19:00: Miqui Clown (Alcolea de Dalt), Masterclass country (Plaça Farga), Degustació cervesa rock (Guadiana), Concurs truita patates (Valladolid)
+20:00: Botifarrada popular (Sagunt), Nit rumbera Albert Nieto (Valladolid)
+20:30: Versions amb Two Much Covers (Vallespir de Dalt)
+21:45: Revers (Guadiana), Gipsy Ivan (Valladolid)
+22:00: Discomòbil Eugeni Carrió (Plaça Farga)
+22:30: PD Xarxacat (Sagunt)
+23:00: Orquestra Sabor Sabor (Alcolea de Baix), Concert d’Esterton (Alcolea de Dalt), Concert Doble Cara (Galileu), Concert (Castellers de Sants)
+23:15: Ratpenat (Vallespir de Baix)
+23:30: MotorPriest (Guadiana), DJ Txanga (Finlàndia)
+23:45: David Canal y su banda (Valladolid)
+00:30: Atonement (Alcolea de Dalt), Festa Allioli Olé! (Sagunt), The Unicornios Lokos (Vallespir de Dalt)
+01:00: Remember Makina DJ Eneko (Plaça Farga), MeanMachine (Vallespir de Baix), Woodchuck (Guadiana)
 
 Dissabte 30
-Nit: concerts Ratpenades + Permalove + Barraka (Papin), Track’s Bar (Alcolea Dalt), Top Band (Farga), PD Renatas (Finlàndia), Wiwi Rock Band + Perra & El Cari (Vallespir Baix), Lonelys Band + Rock the Night (Vallespir Dalt), Peter Fields (rock). Orquestres i DJ Sayol a Galileu.
+08:00: Cursa La Farga (Plaça Farga)
+10:00: Taller defensa personal (Guadiana)
+11:00: Jocs de taula (Plaça Farga), Taller infantil instruments reciclats (Guadiana), Trenet tripulat (Sagunt)
+12:00: Grup Shiva Bollywood (Alcolea de Dalt), Lliurament premis Sants 3 Ràdio (Valladolid), Vermut musical (Vallespir de Dalt), Premis guarniment carrers (Valladolid - unitari)
+13:00: Concurs de truites (Alcolea de Dalt)
+13:30: Vermut socis (Alcolea de Dalt)
+14:00: Concurs truites (Alcolea de Baix), Paella popular Farguera (Plaça Farga), Arrossada Vallespir de Dalt
+15:30: Fideuà popular (Galileu)
+16:00: Jocs taula Farguers (Plaça Farga), Remenem les boles (Vallespir de Dalt)
+17:00: Jocs infantils (Vallespir de Baix)
+18:00: Jocs musicals (Plaça Farga), Ball country (Finlàndia), Actuació infantil (Valladolid), Diada castellera (Plaça Bonet i Muixí - unitari)
+18:30: Correfoc infantil (Unitari), Torneig ping-pong (Sagunt)
+19:00: Xocolatada avis (Valladolid)
+20:00: Trivial intergalàctic (Guadiana), Concert Sorguen (Vallespir de Baix), Nit rocker Peter Fields (Vallespir de Dalt)
+21:00: Sopar final festa (Sagunt), Black Noise (Guadiana)
+21:30: Pinan (Vallespir de Baix)
+22:00: Concert Top Band (Plaça Farga), DJ Sayol (Galileu)
+22:30: Halldor Mar (Vallespir de Dalt)
+23:00: Orquestra fi festa (Alcolea de Baix), Track’s Bar (Alcolea de Dalt), La Trinxera (Guadiana), Bocasoltes (Sagunt), Wiwi Rock Band (Vallespir de Baix)
+23:30: PD Renatas (Finlàndia)
+00:00: DJ Eugeni Carrió (Plaça Farga)
+00:30: Rock the Night (Vallespir de Dalt), Perra & El Cari (Vallespir de Baix), VēMō DJs (Sagunt)
+01:00: Soumeya DJ (Guadiana)
+02:45: Batucada fi festa (Galileu)
+03:00: Traca final (Plaça Farga, Finlàndia, Galileu, Guadiana, Sagunt, Vallespir de Dalt)
 
 Diumenge 31
 Nit: Piromusical de cloenda (unitari).
@@ -284,132 +325,7 @@ Diumenge, 31 d'agost
 
 
 Programa Complet per Carrers de la Festa Major de Sants 2025 (23-31 Agost):
-
-Alcolea de Baix:
-Dijous 28
-12:00 Jocs de ciència
-18:00 Xocolatada popular
-18:30 Espectacle infantil
-20:00 Bona música amb Tropical Mystic
-22:00 Ballarem amb As de Rumbas
-Divendres 29
-14:00 Mandonguillada popular
-16:00 Cançons tradicionals i bon rotllo amb Joan Baró
-23:00 Orquestra Sabor Sabor
-Dissabte 30
-14:00 Concurs de truites
-23:00 Orquestra de Fi de festa
-
-Alcolea de Dalt
-Dijous 28
-14:00 Dinar: Fideuà (compra el teu tiquet)
-18:00 Ball en línia
-23:00 Miquel Cubero (versions)
-Divendres 29
-12:00 Jocs infantils
-18:00 Xocolatada
-19:00 Miqui Clown (pallasso infantil)
-23:00 Concert d'Esterton
-00:30 Concert d'Atonement
-Dissabte 30
-12:00 Grup Shiva (Bollywood)
-13:00 Concurs de truites
-13:30 Vermut amb les persones sòcies
-23:00 Track's Bar (rock)
-Plaça de la Farga
-Dimecres 27
-11:00 Concurs de fang i de dibuix per a infants
-13:00 Botifarrada Farguera
-16:00 Jocs de Taula Farguers
-20:00 Masterclass de salsa a càrrec de Ritmos Barcelona
-20:45 Shows de ball de Ritmos Barcelona
-21:00 Ball social de salsa i bachata
-22:00 Concert de salsa de Guaracheando Latin Group
-00:00 DJ Rafa Mendoza
-Dijous 28
-10:00 Fira de la Festa del Benestar Animal
-17:00 Recital poètic amb VerSants Camins
-18:00 Teatre improvisat a càrrec de la Casa de la Impro
-22:00 Concert de Trambólicos
-00:00 DJ Rafa Mendoza
-Divendres 29
-Tot el dia
-1a Mostra artesana Farguera
-10:30 Torneig de futbol i bàsquet
-11:00 Guerra d'aigua per a totes les edats
-17:00 Xocolatada infantil i actuació màgica amb el Mag Xurret
-19:00 Masterclass de country de la mà de Xavi Badiella
-22:00 Discomòbil Eugeni Carrió
-01:00 Remember Makina amb DJ Eneko Veintiuno
-Dissabte 30
-Tot el dia 1a Mostra artesana Farguera
-08:00 Cursa La Farga amb Corresolidaris
-11:00 Jocs de taula de la mà de Sants Niggurath
-14:00 Paella popular Farguera amb Paelles Papitu
-16:00 Jocs de taula Farguers
-18:00 Jocs de taula musicals
-22:00 Concert de Top Band
-00:00 DJ Eugeni Carrió
-03:00 Traca final de la Festa Major
-
-Finlàndia
-Dijous 28
-11:30 Patxanga de futbol
-17:00 Xocolatada infantil
-18:00 Xicana: una gran pallassa
-20:00 Taller de percussió a càrrec de Tokatoms
-22:30 Concert de rumba amb Los Vecinos de Manué
-00:30 Nit de rock amb La Rockpública
-Divendres 29
-18:00 Sardanes amb la Cobla Jovenívola de Sabadell
-23:30 Nit de festa amb DJ Txanga
-Dissabte 30
-18:00 Ballada de country amb Xavier Badiella
-23:30 Nit de festa amb PD Renatas
-03:00 Traca fi de Festa Major
-
-Galileu
-Dijous 28
-11:30 Bombolles i ball
-19:00 Havaneres i rom amb el Grup Folk Montjuïc
-23:00 DJ Alex
-Divendres 29
-11:30 Zumba al carrer
-18:00 Espectacle de màgia i arts afins
-23:00 Concert de Doble Cara
-Dissabte 30
-15:30 Dinar Fideuà popular
-22:00 DJ Sayol
-02:45 Batucada i fi de festa
-03:00 Traca final de Festa Major
-
-Guadiana
-Dijous 28
-10:30 Campionat de dobles d'escacs
-17:30 Brodat-electro: Taller de collage i brodat
-19:30 Música electrochill amb Electrotwins
-20:00 Fabxlous (electrònica amb ritmes llatins)
-21:30 Muerta Sánchez (DJ 80s / 90s)
-23:00 Devila Crew (electrònica technofeminista)
-00:30 Anna Terrés (techno groove)
-Divendres 29
-10:00 Gimcana fotogràfica (conjunta amb Papin)
-11:00 Taller familiar de collage amb Tallerets
-19:00 Degustació de cervesa artesana a ritme de rock
-20:00 Atomic Leopard (rockabilly / rock & roll clàssic)
-21:45 Revers (èxits del rock)
-23:30 MotorPriest (heavy & rock)
-01:00 Woodchuck (punk, ska, hardcore melòdic)
-Dissabte 30
-10:00 Taller de defensa personal
-11:00 Taller infantil de fabricació d'instruments musicals reciclats
-20:00 Trivial intergalàctic per a totes les edats
-21:00 Black Noise (rock)
-23:00 La Trinxera (pop-rock)
-01:00 Soumeya (DJ maghreb beats & ritmes del món)
-03:00 Traca final de Festa Major
-
-Papin
+Papin (el nostre carrer)
 Dissabte 23
 18:00 Jocs de taula amb Sants-Niggurath
 20:30 Sopar de brasa i traca d'inici
@@ -444,12 +360,89 @@ Dissabte 30
 23:00 Concert de Ratpenades
 01:00 Concert de la Barraka
 
+Alcolea de Baix:
+Divendres 29
+14:00 Mandonguillada popular
+16:00 Cançons tradicionals i bon rotllo amb Joan Baró
+23:00 Orquestra Sabor Sabor
+Dissabte 30
+14:00 Concurs de truites
+23:00 Orquestra de Fi de festa
+
+Alcolea de Dalt
+Divendres 29
+12:00 Jocs infantils
+18:00 Xocolatada
+19:00 Miqui Clown (pallasso infantil)
+23:00 Concert d'Esterton
+00:30 Concert d'Atonement
+Dissabte 30
+12:00 Grup Shiva (Bollywood)
+13:00 Concurs de truites
+13:30 Vermut amb les persones sòcies
+23:00 Track's Bar (rock)
+
+Plaça de la Farga
+Divendres 29
+Tot el dia
+1a Mostra artesana Farguera
+10:30 Torneig de futbol i bàsquet
+11:00 Guerra d'aigua per a totes les edats
+17:00 Xocolatada infantil i actuació màgica amb el Mag Xurret
+19:00 Masterclass de country de la mà de Xavi Badiella
+22:00 Discomòbil Eugeni Carrió
+01:00 Remember Makina amb DJ Eneko Veintiuno
+Dissabte 30
+Tot el dia 1a Mostra artesana Farguera
+08:00 Cursa La Farga amb Corresolidaris
+11:00 Jocs de taula de la mà de Sants Niggurath
+14:00 Paella popular Farguera amb Paelles Papitu
+16:00 Jocs de taula Farguers
+18:00 Jocs de taula musicals
+22:00 Concert de Top Band
+00:00 DJ Eugeni Carrió
+03:00 Traca final de la Festa Major
+
+Finlàndia
+Divendres 29
+18:00 Sardanes amb la Cobla Jovenívola de Sabadell
+23:30 Nit de festa amb DJ Txanga
+Dissabte 30
+18:00 Ballada de country amb Xavier Badiella
+23:30 Nit de festa amb PD Renatas
+03:00 Traca fi de Festa Major
+
+Galileu
+Divendres 29
+11:30 Zumba al carrer
+18:00 Espectacle de màgia i arts afins
+23:00 Concert de Doble Cara
+Dissabte 30
+15:30 Dinar Fideuà popular
+22:00 DJ Sayol
+02:45 Batucada i fi de festa
+03:00 Traca final de Festa Major
+
+Guadiana
+Divendres 29
+10:00 Gimcana fotogràfica (conjunta amb Papin)
+11:00 Taller familiar de collage amb Tallerets
+19:00 Degustació de cervesa artesana a ritme de rock
+20:00 Atomic Leopard (rockabilly / rock & roll clàssic)
+21:45 Revers (èxits del rock)
+23:30 MotorPriest (heavy & rock)
+01:00 Woodchuck (punk, ska, hardcore melòdic)
+Dissabte 30
+10:00 Taller de defensa personal
+11:00 Taller infantil de fabricació d'instruments musicals reciclats
+20:00 Trivial intergalàctic per a totes les edats
+21:00 Black Noise (rock)
+23:00 La Trinxera (pop-rock)
+01:00 Soumeya (DJ maghreb beats & ritmes del món)
+03:00 Traca final de Festa Major
+
+
 Sagunt
-Dijous 28
-11:00 Taller infantil de fang
-18:30 Havaneres amb el grup Barca de Mitjana
-21:00 Sopar intercultural
-22:30 Concert de rumba amb El Persianas & Los Influencers Muertos
 Divendres 29
 11:00 Gimcana fotogràfica (conjunta amb Papin)
 18:00 Taller de bastons amb la Colla Bastonera de Sants
@@ -465,13 +458,6 @@ Dissabte 30
 03:00 Traca fi de Festa Major
 
 Valladolid
-Dijous 28
-09:00 Vintage Market al carrer
-18:00 Visita guiada al nostre carrer
-18:00 Conta contes a càrrec de La Ciutat Invisible
-19:30 Nit argentina: Tango Queer
-21:30 La Chamuyera
-23:30 DJ Fran de Berti
 Divendres 29
 18:00 Taller de cuina a càrrec del Taller 24
 19:00 III Concurs Internacional de truita de patates
@@ -484,10 +470,6 @@ Dissabte 30
 19:00 Xocolatada i berenar per als nostres avis
 
 Vallespir de Baix
-Dijous 28
-Tot el dia
-Fira d'artesania i alimentació
-15:00 Tarda / vespre amb Sants4Ever Party
 Divendres 29
 Tot el dia
 Fira punk – artesania, serigrafia i més
@@ -503,11 +485,6 @@ Dissabte 30
 01:00 Concert de la Perra & El Cari
 
 Vallespir de Dalt
-Dijous 28
-Tot el dia
-Mercat al carrer
-22:00 Nit de festa: Nit de versions amb Lactik
-00:30 Nit de festa amb PD Pachas & The Mamas
 Divendres 29
 11:00 Jocs de fusta tradicionals amb Els jocs de Ca la Padrina
 20:30 Nit de versions: Vespre de versions amb Two Much Covers
@@ -523,10 +500,6 @@ Dissabte 30
 03:00 Traca final de Festa Major
 
 Castellers de Sants
-Dijous 28
-18:30 Tast de síndria i meló per als més petits
-19:00 Animació infantil a càrrec de Jaume Barri
-22:30 Concerts amb Lasta Sanco i Les que faltaband
 Divendres 29
 17:30 Torneig de futbolin
 20:00 Assaig casteller al carrer
