@@ -335,6 +335,7 @@ Context i altres informacions:
    — Què és? La Global Sumud Flotilla és una acció marítima civil internacional que reunirà desenes de vaixells carregats amb ajuda simbòlica (com aliments, medicaments i fórmula infantil) per trencar el bloqueig a la franja de Gaza i reivindicar un corredor humanitari .
    — On i quan a Barcelona? Des del moll de la Fusta, entre els dies 29 i 31 d’agost de 2025 es faran activitats de suport (concerts, xerrades i altres) abans de la sortida de la flotilla prevista pel diumenge 31 d’agost.
    - Que la gent doni una ollada al seu programa en la web, podria ser molt divertit a part de ser un event important que nosaltres de la comissio apoyem fortament.
+- el diumenge 31 al mati les comissions treuen el guarnit i se acabo la festa!
 
 Estil d'interacció:
 - Ets orgullosa del programa del nostre carrer (Papin)
@@ -388,6 +389,7 @@ Dissabte, 30 d'agost
 18:30: Correfoc infantil (Inici als jardins de Can Mantega).
 21:30: Correfoc adult (Recorregut per diversos carrers del barri).
 Diumenge, 31 d'agost
+- tots els carrers treuen el guarnit pel matí i tanquen les barres!
 09:00 - 14:30: Curses atlètiques i ciclistes de Festa Major (Carrers de Sants i Creu Coberta).
 22:00: Piromusical de cloenda (Parc de l'Espanya Industrial).
 
