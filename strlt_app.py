@@ -247,7 +247,7 @@ if not st.session_state.messages:
         "Quins són els altres carrers de la festa?",
         "Què hi ha avui al carrer Papin?",
         "Què hi ha demà al carrer Papin?",
-        "Què hi ha avui a la Festa Major de Sants?",
+        "Què concerts hi ha avui a la Festa Major de Sants?",
         "Com puc participar a la comissió de festes?"
     ]
     for i, q in enumerate(suggestions):
